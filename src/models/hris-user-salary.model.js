@@ -1,0 +1,49 @@
+const { DataTypes } = require("sequelize");
+const sequelize = require("../config/db");
+const { hrisUserSalariesTypeEnum } = require("../enums/userEnums");
+
+const HrisUserSalary = sequelize.define(
+    'HrisUserSalary',
+    {
+        user_salary_id: {
+            type: DataTypes.CHAR(36),
+            primaryKey: true,
+            allowNull: false
+        },
+        user_id: {
+            type: DataTypes.CHAR(36),
+            allowNull: false
+        },
+        base_pay: {
+            type: DataTypes.DECIMAL(10, 2),
+            allowNull: false
+        },
+        type: {
+            type: DataTypes.ENUM(
+                hrisUserSalariesTypeEnum.STARTING,
+                hrisUserSalariesTypeEnum.INCREASE,
+                hrisUserSalariesTypeEnum.CORRECTION
+            ),
+            allowNull: false
+        },
+        date: {
+            type: DataTypes.DATEONLY,
+            allowNull: false
+        },
+        created_at: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW
+        },
+        created_by: {
+            type: DataTypes.CHAR(36),
+            allowNull: false
+        }
+    },
+    {
+        tableName: 'hris_user_salaries',
+        timestamps: false
+    }
+);
+
+module.exports = HrisUserSalary; 
