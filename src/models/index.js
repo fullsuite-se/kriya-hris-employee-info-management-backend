@@ -24,11 +24,11 @@ const Service = require("./service.model");
 const SuperAdminAccount = require("./super-admin-account.model");
 
 //define constraints/relationships
-// HrisUserAccount.hasOne(SuperAdminAccount, { foreignKey: 'user_id', as: 'super_admin' });
-// SuperAdminAccount.belongsTo(HrisUserAccount, { foreignKey: 'user_id', as: 'user' });
+HrisUserAccount.hasOne(SuperAdminAccount, { foreignKey: 'user_id', as: 'super_admin' });
+SuperAdminAccount.belongsTo(HrisUserAccount, { foreignKey: 'user_id', as: 'user' });
 
-SuperAdminAccount.hasOne(HrisUserAccount, { foreignKey: 'user_id', as: 'super_admin' });
-HrisUserAccount.belongsTo(SuperAdminAccount, { foreignKey: 'user_id', as: 'user' });
+// SuperAdminAccount.hasOne(HrisUserAccount, { foreignKey: 'user_id', as: 'super_admin' });
+// HrisUserAccount.belongsTo(SuperAdminAccount, { foreignKey: 'user_id', as: 'user' });
 
 Company.hasOne(CompanyAddress, { foreignKey: 'company_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 CompanyAddress.belongsTo(Company, { foreignKey: 'company_id' });
@@ -45,11 +45,11 @@ CompanyInfo.belongsTo(Company, { foreignKey: 'company_id' });
 Company.hasMany(CompanyJobTitle, { foreignKey: 'company_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 CompanyJobTitle.belongsTo(Company, { foreignKey: 'company_id' });
 
-// CompanyIndustry.hasMany(CompanyInfo, { foreignKey: 'industry_id' });
-// CompanyInfo.belongsTo(CompanyIndustry, { foreignKey: 'industry_id' });
+CompanyIndustry.hasMany(CompanyInfo, { foreignKey: 'industry_id' });
+CompanyInfo.belongsTo(CompanyIndustry, { foreignKey: 'industry_id' });
 
-CompanyInfo.hasOne(CompanyIndustry, { foreignKey: 'industry_id' });
-CompanyIndustry.belongsTo(CompanyInfo, { foreignKey: 'industry_id' });
+// CompanyInfo.hasOne(CompanyIndustry, { foreignKey: 'industry_id' });
+// CompanyIndustry.belongsTo(CompanyInfo, { foreignKey: 'industry_id' });
 
 HrisUserAccount.hasMany(HrisUserPasswordReset, { foreignKey: 'user_id' });
 HrisUserPasswordReset.belongsTo(HrisUserAccount, { foreignKey: 'user_id' });

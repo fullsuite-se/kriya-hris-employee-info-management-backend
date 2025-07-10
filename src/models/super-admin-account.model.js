@@ -7,11 +7,15 @@ const SuperAdminAccount = sequelize.define(
         super_admin_id: {
             type: DataTypes.CHAR(36),
             primaryKey: true,
-            allowNull: false
+            allowNull: false,
         },
         user_id: {
             type: DataTypes.CHAR(36),
-            allowNull: false
+            allowNull: false,
+            references: {
+                model: 'hris_user_accounts',
+                key: 'user_id',
+            }
         },
         created_at: {
             type: DataTypes.DATE,

@@ -12,7 +12,11 @@ const HrisUserEmploymentInfo = sequelize.define(
         },
         user_id: {
             type: DataTypes.CHAR(36),
-            allowNull: false
+            allowNull: false,
+            references: {
+                model: 'hris_user_accounts',
+                key: 'user_id',
+            }
         },
         date_hired: {
             type: DataTypes.DATEONLY,

@@ -13,11 +13,19 @@ const CompanyInfo = sequelize.define(
         },
         company_id: {
             type: DataTypes.CHAR(36),
-            allowNull: false
+            allowNull: false,
+            references: {
+                model: 'companies',
+                key: 'company_id',
+            }
         },
         industry_id: {
             type: DataTypes.CHAR(36),
-            allowNull: true
+            allowNull: true,
+            references: {
+                model: 'company_industries',
+                key: 'industry_id',
+            }
         },
         business_type: {
             type: DataTypes.ENUM(

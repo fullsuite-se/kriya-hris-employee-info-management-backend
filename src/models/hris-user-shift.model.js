@@ -11,11 +11,19 @@ const HrisUserShift = sequelize.define(
         },
         shift_template_id: {
             type: DataTypes.CHAR(36),
-            allowNull: false
+            allowNull: false,
+            references: {
+                model: 'hris_shifts_templates',
+                key: 'shift_template_id',
+            }
         },
         user_id: {
             type: DataTypes.CHAR(36),
-            allowNull: false
+            allowNull: false,
+            references: {
+                model: 'hris_user_accounts',
+                key: 'user_id',
+            }
         }
     },
     {

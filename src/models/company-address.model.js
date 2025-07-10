@@ -12,7 +12,11 @@ const CompanyAddress = sequelize.define(
         },
         company_id: {
             type: DataTypes.CHAR(36),
-            allowNull: false
+            allowNull: false,
+            references: {
+                model: 'companies',
+                key: 'company_id',
+            }
         },
         address_type: {
             type: DataTypes.ENUM(companyAddressesAddressTypeEnum.MAIN, companyAddressesAddressTypeEnum.BRANCH),

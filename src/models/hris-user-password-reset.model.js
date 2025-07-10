@@ -12,7 +12,11 @@ const HrisUserPasswordReset = sequelize.define(
         },
         user_id: {
             type: DataTypes.CHAR(36),
-            allowNull: true
+            allowNull: true,
+            references: {
+                model: 'hris_user_accounts',
+                key: 'user_id',
+            }
         },
         otp_code: {
             type: DataTypes.STRING(36),

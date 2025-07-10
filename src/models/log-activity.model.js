@@ -11,15 +11,27 @@ const LogsActivity = sequelize.define(
     },
     service_id: {
       type: DataTypes.CHAR(36),
-      allowNull: false
+      allowNull: false,
+      references: {
+        model: 'services',
+        key: 'service_id',
+      }
     },
     company_id: {
       type: DataTypes.CHAR(36),
-      allowNull: false
+      allowNull: false,
+      references: {
+        model: 'companies',
+        key: 'company_id',
+      }
     },
     user_id: {
       type: DataTypes.CHAR(36),
-      allowNull: false
+      allowNull: false,
+      references: {
+        model: 'hris_user_accounts',
+        key: 'user_id',
+      }
     },
     action: {
       type: DataTypes.STRING(50),

@@ -13,7 +13,11 @@ const CompanyJobTitle = sequelize.define(
         },
         company_id: {
             type: DataTypes.CHAR(36),
-            allowNull: false
+            allowNull: false,
+            references: {
+                model: 'companies',
+                key: 'company_id',
+            }
         },
         job_title: {
             type: DataTypes.STRING(100),

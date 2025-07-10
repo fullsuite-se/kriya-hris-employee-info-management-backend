@@ -11,7 +11,11 @@ const ServiceFeature = sequelize.define(
         },
         service_id: {
             type: DataTypes.CHAR(36),
-            allowNull: false
+            allowNull: false,
+            references: {
+                model: 'services',
+                key: 'service_id',
+            }
         },
         feature_name: {
             type: DataTypes.STRING(50),
