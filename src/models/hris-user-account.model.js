@@ -8,7 +8,11 @@ const HrisUserAccount = sequelize.define(
         user_id: {
             type: DataTypes.CHAR(36),
             primaryKey: true,
-            allowNull: false
+            allowNull: false,
+            // references: {
+            //     model: 'hris_user_designations',
+            //     key: 'user_id',
+            // }
         },
         user_email: {
             type: DataTypes.STRING(100),
@@ -41,7 +45,7 @@ const HrisUserAccount = sequelize.define(
         },
         created_at: {
             type: DataTypes.DATE,
-            defaultValue: DataTypes.NOW
+            defaultValue: DataTypes.NOW()
         }
     },
     {

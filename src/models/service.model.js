@@ -16,7 +16,7 @@ const Service = sequelize.define(
         created_at: {
             type: DataTypes.DATE,
             allowNull: false,
-            defaultValue: DataTypes.NOW
+            defaultValue: DataTypes.NOW()
         }
     },
     {

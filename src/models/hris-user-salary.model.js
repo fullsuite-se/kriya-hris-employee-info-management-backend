@@ -32,12 +32,13 @@ const HrisUserSalary = sequelize.define(
         },
         date: {
             type: DataTypes.DATEONLY,
-            allowNull: false
+            allowNull: false,
+            defaultValue: DataTypes.NOW()
         },
         created_at: {
             type: DataTypes.DATE,
             allowNull: false,
-            defaultValue: DataTypes.NOW
+            defaultValue: DataTypes.NOW()
         },
         created_by: {
             type: DataTypes.CHAR(36),

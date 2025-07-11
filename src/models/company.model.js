@@ -23,7 +23,7 @@ const Company = sequelize.define(
         date_added: {
             type: DataTypes.DATE,
             allowNull: false,
-            defaultValue: DataTypes.NOW
+            defaultValue: DataTypes.NOW()
         }
     },
     {

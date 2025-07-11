@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const path = require('path');
 const cors = require("cors");
-const sequelize = require("./config/db")
+const sequelize = require("./config/db");
 require("dotenv").config();
 const routes = require("./routes");
 app.use(express.urlencoded({ extended: true }));
@@ -14,13 +14,20 @@ app.use(cors({
     credentials: false,
 }));
 
+//this is to run the db and sync the tables
+require("./models");
+
 app.use('/api', routes);
+
+
 
 (async () => {
     try {
         await sequelize.authenticate();
         console.log('Connection has been established successfully.');
-        // await sequelize.sync();
+        await sequelize.sync({
+            force: true,
+        });
     } catch (error) {
         console.error('Unable to connect to the database:', error);
     }

@@ -66,11 +66,15 @@ HrisUserAccessPermission.belongsTo(ServiceFeature, { foreignKey: 'service_featur
 // HrisUserAccount.hasMany(HrisUserDesignation, { foreignKey: 'user_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 // HrisUserDesignation.belongsTo(HrisUserAccount, { foreignKey: 'user_id' });
 
-HrisUserAccount.hasOne(HrisUserDesignation, { foreignKey: 'user_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
+// HrisUserAccount.hasOne(HrisUserDesignation, { foreignKey: 'upline_id' });
+// HrisUserDesignation.belongsTo(HrisUserAccount, { foreignKey: 'upline_id', as: 'upline' });
+
+HrisUserAccount.hasMany(HrisUserDesignation, { foreignKey: 'user_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 HrisUserDesignation.belongsTo(HrisUserAccount, { foreignKey: 'user_id' });
 
 HrisUserAccount.hasOne(HrisUserDesignation, { foreignKey: 'upline_id' });
 HrisUserDesignation.belongsTo(HrisUserAccount, { foreignKey: 'upline_id', as: 'upline' });
+
 
 Company.hasMany(HrisUserDesignation, { foreignKey: 'company_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 HrisUserDesignation.belongsTo(Company, { foreignKey: 'company_id' });
