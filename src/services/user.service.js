@@ -210,7 +210,13 @@ exports.findAllHrisUserAccountViaSearcyQuery = async (query) => {
     })
 }
 
-exports.createHrisUserAccount = async () => {
+exports.findUserByEmail = async (user_email) => {
+    return await HrisUserAccount.findOne({
+        where: { user_email }
+    });
+}
 
+exports.createHrisUserAccount = async () => {
+    return
 }
 
