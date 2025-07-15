@@ -9,7 +9,14 @@ const sequelize = new Sequelize(
         host: process.env.DB_HOST,
         dialect: 'mysql',
         port: process.env.DB_PORT,
-        logging: console.log
+        logging: console.log,
+        pool: {
+            max: 10,
+            min: 0,
+            idle: 60000,
+            acquire: 60000,
+            evict: 30000
+        }
     }
 );
 
