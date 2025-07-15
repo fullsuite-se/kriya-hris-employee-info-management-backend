@@ -6,13 +6,14 @@ const CompanyIndustry = require("./company-industry.model");
 const CompanyInfo = require("./company-info.model");
 const CompanyJobTitle = require("./company-job-title.model");
 const Company = require("./company.model");
-const HrisShiftsTemplate = require("./hris-shifts-template.model");
+const HrisUserEmploymentType = require("./hris-user-employement-type.model");
 const HrisUserAccessPermission = require("./hris-user-access-permission.model");
 const HrisUserAccount = require("./hris-user-account.model");
 const HrisUserAddress = require("./hris-user-address.model");
 const HrisUserDesignation = require("./hris-user-designation.model");
 const HrisUserEmergencyContact = require("./hris-user-emergency-contact.model");
 const HrisUserEmploymentInfo = require("./hris-user-employment-info.model");
+const HrisUserGovernmentId = require("./hris-user-government-id.model");
 const HrisUserInfo = require("./hris-user-info.model");
 const HrisUserPasswordReset = require("./hris-user-password-reset.model");
 const HrisUserSalary = require("./hris-user-salary.model");
@@ -22,13 +23,54 @@ const LogsActivity = require("./log-activity.model");
 const ServiceFeature = require("./service-feature.model");
 const Service = require("./service.model");
 const SuperAdminAccount = require("./super-admin-account.model");
+const HrisUserGovernmentIdType = require("./hris-user-government-id-type.model");
+const HrisUserEmploymentStatus = require("./hris-user-employment-status.model");
+const HrisUserSalaryAdjustmentType = require("./hris-user-salary-adjustment-type.model");
+const CompanyTeam = require("./company-teams.model");
+const CompanyOffice = require("./company-office.model");
+const HrisUserJobLevel = require("./hris-user-job-level.model");
+const HrisUserShiftsTemplate = require("./hris-user-shifts-template.model");
+const HrisUserHr201 = require("./hris-user-hr201.model");
 
 //define constraints/relationships
+HrisUserAccount.hasMany(HrisUserAccount, { foreignKey: 'created_by', onDelete: 'CASCADE' });
+HrisUserAccount.belongsTo(HrisUserAccount, { foreignKey: 'created_by' });
+
+HrisUserAccount.hasOne(HrisUserHr201, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+HrisUserHr201.belongsTo(HrisUserAccount, { foreignKey: 'user_id' });
+
+CompanyOffice.hasMany(HrisUserDesignation, { foreignKey: 'office_id', onDelete: 'CASCADE' },);
+HrisUserDesignation.belongsTo(CompanyOffice, { foreignKey: 'office_id' });
+
+CompanyTeam.hasMany(HrisUserDesignation, { foreignKey: 'team_id', onDelete: 'CASCADE' });
+HrisUserDesignation.belongsTo(CompanyTeam, { foreignKey: 'team_id' });
+
+HrisUserAccount.hasMany(HrisUserGovernmentId, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+HrisUserGovernmentId.belongsTo(HrisUserAccount, { foreignKey: 'user_id' });
+
+HrisUserGovernmentIdType.hasMany(HrisUserGovernmentId, { foreignKey: 'government_id_type_id', onDelete: 'CASCADE' });
+HrisUserGovernmentId.belongsTo(HrisUserGovernmentIdType, { foreignKey: 'government_id_type_id' });
+
+HrisUserEmploymentStatus.hasMany(HrisUserEmploymentInfo, { foreignKey: 'employment_status_id', onDelete: 'CASCADE' });
+HrisUserEmploymentInfo.belongsTo(HrisUserEmploymentStatus, { foreignKey: 'employment_status_id' });
+
+HrisUserSalaryAdjustmentType.hasMany(HrisUserSalary, { foreignKey: 'salary_adjustment_type_id', onDelete: 'CASCADE' });
+HrisUserSalary.belongsTo(HrisUserSalaryAdjustmentType, { foreignKey: 'salary_adjustment_type_id' });
+
+Company.hasMany(CompanyTeam, { foreignKey: 'company_id', onDelete: 'CASCADE' });
+CompanyTeam.belongsTo(Company, { foreignKey: 'company_id' });
+
+Company.hasMany(CompanyOffice, { foreignKey: 'company_id', onDelete: 'CASCADE' });
+CompanyOffice.belongsTo(Company, { foreignKey: 'company_id' });
+
+HrisUserJobLevel.hasMany(HrisUserEmploymentInfo, { foreignKey: 'job_level_id', onDelete: 'CASCADE' })
+HrisUserEmploymentInfo.belongsTo(HrisUserJobLevel, { foreignKey: 'job_level_id' });
+
+HrisUserEmploymentType.hasMany(HrisUserEmploymentInfo, { foreignKey: 'employment_type_id', onDelete: 'CASCADE' });
+HrisUserEmploymentInfo.belongsTo(HrisUserEmploymentType, { foreignKey: 'employment_type_id' })
+
 HrisUserAccount.hasOne(SuperAdminAccount, { foreignKey: 'user_id', as: 'super_admin' });
 SuperAdminAccount.belongsTo(HrisUserAccount, { foreignKey: 'user_id', as: 'user' });
-
-// SuperAdminAccount.hasOne(HrisUserAccount, { foreignKey: 'user_id', as: 'super_admin' });
-// HrisUserAccount.belongsTo(SuperAdminAccount, { foreignKey: 'user_id', as: 'user' });
 
 Company.hasOne(CompanyAddress, { foreignKey: 'company_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 CompanyAddress.belongsTo(Company, { foreignKey: 'company_id' });
@@ -122,8 +164,8 @@ HrisUserSalary.belongsTo(HrisUserAccount, { foreignKey: 'user_id' });
 HrisUserAccount.hasOne(HrisUserShift, { foreignKey: 'user_id' });
 HrisUserShift.belongsTo(HrisUserAccount, { foreignKey: 'user_id' });
 
-HrisShiftsTemplate.hasMany(HrisUserShift, { foreignKey: 'shift_template_id' });
-HrisUserShift.belongsTo(HrisShiftsTemplate, { foreignKey: 'shift_template_id' });
+HrisUserShiftsTemplate.hasMany(HrisUserShift, { foreignKey: 'shift_template_id' });
+HrisUserShift.belongsTo(HrisUserShiftsTemplate, { foreignKey: 'shift_template_id' });
 
 Service.hasMany(LogsActivity, { foreignKey: 'service_id' });
 LogsActivity.belongsTo(Service, { foreignKey: 'service_id' });
@@ -152,7 +194,6 @@ module.exports = {
     CompanyInfo,
     CompanyJobTitle,
     Company,
-    HrisShiftsTemplate,
     HrisUserAccessPermission,
     HrisUserAccount,
     HrisUserAddress,
@@ -167,5 +208,17 @@ module.exports = {
     LogsActivity,
     ServiceFeature,
     Service,
-    SuperAdminAccount
+    SuperAdminAccount,
+    HrisUserGovernmentId,
+    HrisUserGovernmentIdType,
+    HrisUserEmploymentStatus,
+    HrisUserSalaryAdjustmentType,
+    CompanyTeam,
+    CompanyOffice,
+    HrisUserJobLevel,
+    HrisUserEmploymentType,
+    HrisUserShiftsTemplate,
+    HrisUserHr201,
+
+
 }
