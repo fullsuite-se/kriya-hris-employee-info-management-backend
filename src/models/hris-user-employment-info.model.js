@@ -1,6 +1,5 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
-const { hrisUserEmploymentInfosEmploymentStatusEnum } = require("../enums/userEnums");
 
 const HrisUserEmploymentInfo = sequelize.define(
     'HrisUserEmploymentInfo',
@@ -34,18 +33,29 @@ const HrisUserEmploymentInfo = sequelize.define(
             type: DataTypes.DATEONLY,
             allowNull: true
         },
-        employment_status: {
-            type: DataTypes.ENUM(
-                hrisUserEmploymentInfosEmploymentStatusEnum.PROBATIONARY,
-                hrisUserEmploymentInfosEmploymentStatusEnum.REGULAR,
-                hrisUserEmploymentInfosEmploymentStatusEnum.PART_TIME,
-                hrisUserEmploymentInfosEmploymentStatusEnum.INTERN,
-                hrisUserEmploymentInfosEmploymentStatusEnum.CONTRACTUAL,
-                hrisUserEmploymentInfosEmploymentStatusEnum.RETIRED,
-                hrisUserEmploymentInfosEmploymentStatusEnum.RESIGNED,
-                hrisUserEmploymentInfosEmploymentStatusEnum.TERMINATED
-            ),
-            allowNull: false
+        employment_status_id: {
+            type: DataTypes.CHAR(36),
+            allowNull: false,
+            references: {
+                model: 'hris_user_employment_statuses',
+                key: 'employment_status_id',
+            }
+        },
+        job_level_id: {
+            type: DataTypes.CHAR(36),
+            allowNull: false,
+            references: {
+                model: 'hris_user_job_levels',
+                key: 'job_level_id',
+            }
+        },
+        employment_type_id: {
+            type: DataTypes.CHAR(36),
+            allowNull: false,
+            references: {
+                model: 'hris_user_employment_types',
+                key: 'employment_type_id',
+            }
         }
     },
     {

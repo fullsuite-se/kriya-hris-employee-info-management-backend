@@ -64,6 +64,22 @@ const HrisUserDesignation = sequelize.define(
                 model: 'hris_user_accounts',
                 key: 'user_id',
             }
+        },
+        office_id: {
+            type: DataTypes.CHAR(36),
+            allowNull: true,
+            references: {
+                model: 'company_offices',
+                key: 'office_id',
+            }
+        },
+        team_id: {
+            type: DataTypes.CHAR(36),
+            allowNull: true,
+            references: {
+                model: 'company_teams',
+                key: 'team_id',
+            }
         }
     },
     {

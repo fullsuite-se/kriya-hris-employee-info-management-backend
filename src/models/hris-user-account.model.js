@@ -46,6 +46,14 @@ const HrisUserAccount = sequelize.define(
         created_at: {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW()
+        },
+        created_by: {
+            type: DataTypes.CHAR(36),
+            allowNull: true,
+            references: {
+                model: 'hris_user_accounts',
+                key: 'user_id',
+            }
         }
     },
     {

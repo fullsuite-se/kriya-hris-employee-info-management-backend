@@ -1,6 +1,5 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/db");
-const { hrisUserSalariesTypeEnum } = require("../enums/userEnums");
 
 const HrisUserSalary = sequelize.define(
     'HrisUserSalary',
@@ -22,13 +21,13 @@ const HrisUserSalary = sequelize.define(
             type: DataTypes.DECIMAL(10, 2),
             allowNull: false
         },
-        type: {
-            type: DataTypes.ENUM(
-                hrisUserSalariesTypeEnum.STARTING,
-                hrisUserSalariesTypeEnum.INCREASE,
-                hrisUserSalariesTypeEnum.CORRECTION
-            ),
-            allowNull: false
+        salary_adjustment_type_id: {
+            type: DataTypes.CHAR(36),
+            allowNull: false,
+            references: {
+                model: 'hris_user_salary_adjustment_types',
+                key: 'salary_adjustment_type_id',
+            }
         },
         date: {
             type: DataTypes.DATEONLY,
@@ -40,10 +39,11 @@ const HrisUserSalary = sequelize.define(
             allowNull: false,
             defaultValue: DataTypes.NOW()
         },
-        created_by: {
-            type: DataTypes.CHAR(36),
-            allowNull: false
-        }
+        updated_at: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW()
+        },
     },
     {
         tableName: 'hris_user_salaries',
