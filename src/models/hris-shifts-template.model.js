@@ -34,6 +34,10 @@ const HrisShiftsTemplate = sequelize.define(
         flexible: {
             type: DataTypes.BOOLEAN,
             allowNull: true
+        },
+        shif_name: {
+            type: DataTypes.STRING(50),
+            allowNull: true
         }
     },
     {
