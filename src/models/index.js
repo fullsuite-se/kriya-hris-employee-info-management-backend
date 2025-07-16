@@ -31,8 +31,21 @@ const CompanyOffice = require("./company-office.model");
 const HrisUserJobLevel = require("./hris-user-job-level.model");
 const HrisUserShiftsTemplate = require("./hris-user-shifts-template.model");
 const HrisUserHr201 = require("./hris-user-hr201.model");
+const HrisUserAttendance = require("./hris-user-attendance.model");
+const HrisUserOvertime = require("./hris-user-overtime.model");
+const HrisUserOvertimeType = require("./hris-user-overtime-type.model");
 
 //define constraints/relationships
+HrisUserAccount.hasMany(HrisUserAttendance, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+HrisUserAttendance.belongsTo(HrisUserAccount, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+
+HrisUserAccount.hasMany(HrisUserOvertime, { foreignKey: 'requester_id', onDelete: 'CASCADE' });
+HrisUserOvertime.belongsTo(HrisUserAccount, { foreignKey: 'requester_id', onDelete: 'CASCADE' });
+
+HrisUserOvertimeType.hasMany(HrisUserOvertime, { foreignKey: 'overtime_type_id' });
+HrisUserOvertime.belongsTo(HrisUserOvertimeType, { foreignKey: 'overtime_type_id' });
+
+
 HrisUserAccount.hasMany(HrisUserAccount, { foreignKey: 'created_by', onDelete: 'CASCADE' });
 HrisUserAccount.belongsTo(HrisUserAccount, { foreignKey: 'created_by' });
 
