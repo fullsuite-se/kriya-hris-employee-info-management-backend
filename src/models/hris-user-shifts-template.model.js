@@ -35,7 +35,7 @@ const HrisUserShiftsTemplate = sequelize.define(
             type: DataTypes.BOOLEAN,
             allowNull: true
         },
-        shif_name: {
+        shift_name: {
             type: DataTypes.STRING(50),
             allowNull: true
         }

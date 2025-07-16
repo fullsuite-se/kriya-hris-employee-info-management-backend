@@ -1,5 +1,5 @@
 const { Op } = require("sequelize");
-const { HrisUserAccount, HrisUserInfo, HrisUserAddress, HrisUserEmergencyContact, HrisUserEmploymentInfo, HrisUserDesignation, HrisUserShift, HrisShiftsTemplate, HrisUserSalary, Company, CompanyAddress, CompanyDepartment, CompanyDivision, CompanyInfo, CompanyJobTitle, CompanyIndustry } = require("../models")
+const { HrisUserAccount, HrisUserInfo, HrisUserAddress, HrisUserEmergencyContact, HrisUserEmploymentInfo, HrisUserDesignation, HrisUserShift, HrisUserSalary, Company, CompanyAddress, CompanyDepartment, CompanyDivision, CompanyInfo, CompanyJobTitle, CompanyIndustry, HrisUserSalaryAdjustmentType, HrisUserJobLevel, HrisUserEmploymentStatus, HrisUserEmploymentType, HrisUserHr201, CompanyOffice, CompanyTeam, HrisUserGovernmentId, HrisUserGovernmentIdType, HrisUserShiftsTemplate } = require("../models")
 
 exports.findAllHrisUserAccount = async () => {
     return await HrisUserAccount.findAll({
@@ -14,13 +14,32 @@ exports.findAllHrisUserAccount = async () => {
                 model: HrisUserEmergencyContact,
             },
             {
-                model: HrisUserEmploymentInfo,
+                model: HrisUserHr201,
             },
             {
                 model: HrisUserSalary,
+                include: HrisUserSalaryAdjustmentType,
             },
             {
-                model: HrisUserDesignation, //how about the upline id here? 
+                model: HrisUserEmploymentInfo,
+                include: [
+                    {
+                        model: HrisUserJobLevel,
+                    },
+                    {
+                        model: HrisUserEmploymentStatus
+                    },
+                    {
+                        model: HrisUserEmploymentType
+                    },
+                ]
+            },
+            {
+                model: HrisUserGovernmentId,
+                include: HrisUserGovernmentIdType
+            },
+            {
+                model: HrisUserDesignation,
                 include: [
                     {
                         model: Company,
@@ -31,22 +50,14 @@ exports.findAllHrisUserAccount = async () => {
 
                             {
                                 model: CompanyInfo,
-                                include: [
-                                    {
-                                        model: CompanyIndustry,
-                                    }
-                                ]
+                                include: CompanyIndustry
                             },
 
                         ]
                     },
                     {
                         model: HrisUserShift,
-                        include: [
-                            {
-                                model: HrisShiftsTemplate,
-                            },
-                        ]
+                        include: HrisUserShiftsTemplate,
                     },
                     {
                         model: CompanyJobTitle
@@ -58,7 +69,13 @@ exports.findAllHrisUserAccount = async () => {
                         model: CompanyDivision
                     },
                     {
-                        model: HrisUserAccount
+                        model: HrisUserAccount //for upline
+                    },
+                    {
+                        model: CompanyOffice,
+                    },
+                    {
+                        model: CompanyTeam,
                     }
                 ]
             }
@@ -80,13 +97,32 @@ exports.findHrisUserAccount = async (user_id) => {
                 model: HrisUserEmergencyContact,
             },
             {
-                model: HrisUserEmploymentInfo,
+                model: HrisUserHr201,
             },
             {
                 model: HrisUserSalary,
+                include: HrisUserSalaryAdjustmentType,
             },
             {
-                model: HrisUserDesignation, //how about the upline id here? 
+                model: HrisUserEmploymentInfo,
+                include: [
+                    {
+                        model: HrisUserJobLevel,
+                    },
+                    {
+                        model: HrisUserEmploymentStatus
+                    },
+                    {
+                        model: HrisUserEmploymentType
+                    },
+                ]
+            },
+            {
+                model: HrisUserGovernmentId,
+                include: HrisUserGovernmentIdType
+            },
+            {
+                model: HrisUserDesignation,
                 include: [
                     {
                         model: Company,
@@ -97,22 +133,14 @@ exports.findHrisUserAccount = async (user_id) => {
 
                             {
                                 model: CompanyInfo,
-                                include: [
-                                    {
-                                        model: CompanyIndustry,
-                                    }
-                                ]
+                                include: CompanyIndustry
                             },
 
                         ]
                     },
                     {
                         model: HrisUserShift,
-                        include: [
-                            {
-                                model: HrisShiftsTemplate,
-                            },
-                        ]
+                        include: HrisUserShiftsTemplate,
                     },
                     {
                         model: CompanyJobTitle
@@ -124,7 +152,13 @@ exports.findHrisUserAccount = async (user_id) => {
                         model: CompanyDivision
                     },
                     {
-                        model: HrisUserAccount
+                        model: HrisUserAccount //for upline
+                    },
+                    {
+                        model: CompanyOffice,
+                    },
+                    {
+                        model: CompanyTeam,
                     }
                 ]
             }
@@ -158,13 +192,32 @@ exports.findAllHrisUserAccountViaSearcyQuery = async (query) => {
                 model: HrisUserEmergencyContact,
             },
             {
-                model: HrisUserEmploymentInfo,
+                model: HrisUserHr201,
             },
             {
                 model: HrisUserSalary,
+                include: HrisUserSalaryAdjustmentType,
             },
             {
-                model: HrisUserDesignation, //how about the upline id here? 
+                model: HrisUserEmploymentInfo,
+                include: [
+                    {
+                        model: HrisUserJobLevel,
+                    },
+                    {
+                        model: HrisUserEmploymentStatus
+                    },
+                    {
+                        model: HrisUserEmploymentType
+                    },
+                ]
+            },
+            {
+                model: HrisUserGovernmentId,
+                include: HrisUserGovernmentIdType
+            },
+            {
+                model: HrisUserDesignation,
                 include: [
                     {
                         model: Company,
@@ -175,22 +228,14 @@ exports.findAllHrisUserAccountViaSearcyQuery = async (query) => {
 
                             {
                                 model: CompanyInfo,
-                                include: [
-                                    {
-                                        model: CompanyIndustry,
-                                    }
-                                ]
+                                include: CompanyIndustry
                             },
 
                         ]
                     },
                     {
                         model: HrisUserShift,
-                        include: [
-                            {
-                                model: HrisShiftsTemplate,
-                            },
-                        ]
+                        include: HrisUserShiftsTemplate,
                     },
                     {
                         model: CompanyJobTitle
@@ -202,7 +247,13 @@ exports.findAllHrisUserAccountViaSearcyQuery = async (query) => {
                         model: CompanyDivision
                     },
                     {
-                        model: HrisUserAccount
+                        model: HrisUserAccount //for upline
+                    },
+                    {
+                        model: CompanyOffice,
+                    },
+                    {
+                        model: CompanyTeam,
                     }
                 ]
             }

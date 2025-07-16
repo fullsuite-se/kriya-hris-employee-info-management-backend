@@ -52,6 +52,32 @@ const HrisUserInfo = sequelize.define(
         birthdate: {
             type: DataTypes.DATEONLY,
             allowNull: true
+        },
+        nickname: {
+            type: DataTypes.STRING(50),
+            allowNull: true,
+        },
+        blood_type: {
+            type: DataTypes.ENUM(
+                'A',
+                'B',
+                'AB',
+                'O'
+            ),
+            allowNull: true,
+        },
+        civil_status: {
+            type: DataTypes.ENUM(
+                'Single',
+                'Married',
+                'Divorce',
+                'Widowed',
+            ),
+            allowNull: true
+        },
+        birth_place: {
+            type: DataTypes.STRING(200),
+            allowNull: true,
         }
     },
     {
