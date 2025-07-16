@@ -84,7 +84,7 @@ exports.findAllHrisUserAccount = async () => {
 }
 
 exports.findHrisUserAccount = async (user_id) => {
-    const hrisUserAccount = await HrisUserAccount.findAll({
+    const hrisUserAccount = await HrisUserAccount.findOne({
         where: { user_id },
         include: [
             {
@@ -173,17 +173,28 @@ exports.findHrisUserAccount = async (user_id) => {
 exports.findAllHrisUserAccountViaSearcyQuery = async (query) => {
     return await HrisUserAccount.findAll({
         where: {
-            [Op.or]: [{ user_email: `%${query}%` }]
+            [Op.or]: [
+                {
+                    user_email: {
+                        [Op.like]: `%${query}%`,
+                    }
+                },
+                {
+                    '$HrisUserInfo.first_name$': {
+                        [Op.like]: `%${query}%`,
+                    }
+                },
+                {
+                    '$HrisUserInfo.last_name$': {
+                        [Op.like]: `%${query}%`,
+                    }
+                }
+            ]
         },
         include: [
             {
                 model: HrisUserInfo,
-                where: {
-                    [Op.or]: [
-                        { first_name: `%${query}%` },
-                        { last_name: `%${query}%` },
-                    ]
-                }
+                required: true // IMPORTANT for the $field$ syntax to work
             },
             {
                 model: HrisUserAddress,
@@ -201,15 +212,9 @@ exports.findAllHrisUserAccountViaSearcyQuery = async (query) => {
             {
                 model: HrisUserEmploymentInfo,
                 include: [
-                    {
-                        model: HrisUserJobLevel,
-                    },
-                    {
-                        model: HrisUserEmploymentStatus
-                    },
-                    {
-                        model: HrisUserEmploymentType
-                    },
+                    { model: HrisUserJobLevel },
+                    { model: HrisUserEmploymentStatus },
+                    { model: HrisUserEmploymentType }
                 ]
             },
             {
@@ -222,44 +227,28 @@ exports.findAllHrisUserAccountViaSearcyQuery = async (query) => {
                     {
                         model: Company,
                         include: [
-                            {
-                                model: CompanyAddress,
-                            },
-
+                            { model: CompanyAddress },
                             {
                                 model: CompanyInfo,
                                 include: CompanyIndustry
-                            },
-
+                            }
                         ]
                     },
                     {
                         model: HrisUserShift,
-                        include: HrisUserShiftsTemplate,
+                        include: HrisUserShiftsTemplate
                     },
-                    {
-                        model: CompanyJobTitle
-                    },
-                    {
-                        model: CompanyDepartment,
-                    },
-                    {
-                        model: CompanyDivision
-                    },
-                    {
-                        model: HrisUserAccount //for upline
-                    },
-                    {
-                        model: CompanyOffice,
-                    },
-                    {
-                        model: CompanyTeam,
-                    }
+                    { model: CompanyJobTitle },
+                    { model: CompanyDepartment },
+                    { model: CompanyDivision },
+                    { model: HrisUserAccount }, // for upline
+                    { model: CompanyOffice },
+                    { model: CompanyTeam }
                 ]
             }
         ]
-    })
-}
+    });
+};
 
 exports.findUserByEmail = async (user_email) => {
     return await HrisUserAccount.findOne({
