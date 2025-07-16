@@ -25,14 +25,6 @@ const HrisUserDesignation = sequelize.define(
                 key: 'company_id',
             }
         },
-        user_shift_id: {
-            type: DataTypes.CHAR(36),
-            allowNull: true,
-            references: {
-                model: 'hris_user_shifts',
-                key: 'user_shift_id',
-            }
-        },
         job_title_id: {
             type: DataTypes.CHAR(36),
             allowNull: true,

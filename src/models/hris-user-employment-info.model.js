@@ -17,6 +17,14 @@ const HrisUserEmploymentInfo = sequelize.define(
                 key: 'user_id',
             }
         },
+        shift_template_id: {
+            type: DataTypes.CHAR(36),
+            allowNull: false,
+            references: {
+                model: 'hris_user_shifts_templates',
+                key: 'shift_template_id',
+            }
+        },
         date_hired: {
             type: DataTypes.DATEONLY,
             allowNull: false

@@ -18,7 +18,6 @@ const HrisUserInfo = require("./hris-user-info.model");
 const HrisUserPasswordReset = require("./hris-user-password-reset.model");
 const HrisUserSalary = require("./hris-user-salary.model");
 const HrisUserServicePermission = require("./hris-user-service-permission.model");
-const HrisUserShift = require("./hris-user-shift.model");
 const LogsActivity = require("./log-activity.model");
 const ServiceFeature = require("./service-feature.model");
 const Service = require("./service.model");
@@ -143,9 +142,6 @@ HrisUserDesignation.belongsTo(CompanyDivision, { foreignKey: 'division_id' });
 CompanyJobTitle.hasMany(HrisUserDesignation, { foreignKey: 'job_title_id', onDelete: 'SET NULL', onUpdate: 'SET NULL' });
 HrisUserDesignation.belongsTo(CompanyJobTitle, { foreignKey: 'job_title_id' });
 
-HrisUserShift.hasMany(HrisUserDesignation, { foreignKey: 'user_shift_id' });
-HrisUserDesignation.belongsTo(HrisUserShift, { foreignKey: 'user_shift_id' });
-
 HrisUserAccount.hasMany(HrisUserEmergencyContact, { foreignKey: 'user_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 HrisUserEmergencyContact.belongsTo(HrisUserAccount, { foreignKey: 'user_id' });
 
@@ -155,30 +151,11 @@ HrisUserEmploymentInfo.belongsTo(HrisUserAccount, { foreignKey: 'user_id' });
 HrisUserAccount.hasOne(HrisUserInfo, { foreignKey: 'user_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 HrisUserInfo.belongsTo(HrisUserAccount, { foreignKey: 'user_id' });
 
-// HrisUserAccount.hasMany(HrisUserSalary, { foreignKey: 'user_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
-// HrisUserSalary.belongsTo(HrisUserAccount, { foreignKey: 'user_id' });
-
 HrisUserAccount.hasOne(HrisUserSalary, { foreignKey: 'user_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 HrisUserSalary.belongsTo(HrisUserAccount, { foreignKey: 'user_id' });
 
-// HrisUserAccount.belongsToMany(HrisUserSalary, {
-//     through: 'HrisUserSalary',
-//     as: 'created_salaries',
-//     foreignKey: 'created_by'
-// });
-// HrisUserSalary.belongsTo(HrisUserAccount, {
-//     as: 'creator',
-//     foreignKey: 'created_by'
-// });
-
-// HrisUserAccount.hasMany(HrisUserShift, { foreignKey: 'user_id' });
-// HrisUserShift.belongsTo(HrisUserAccount, { foreignKey: 'user_id' });
-
-HrisUserAccount.hasOne(HrisUserShift, { foreignKey: 'user_id' });
-HrisUserShift.belongsTo(HrisUserAccount, { foreignKey: 'user_id' });
-
-HrisUserShiftsTemplate.hasMany(HrisUserShift, { foreignKey: 'shift_template_id' });
-HrisUserShift.belongsTo(HrisUserShiftsTemplate, { foreignKey: 'shift_template_id' });
+HrisUserShiftsTemplate.hasMany(HrisUserEmploymentInfo, { foreignKey: 'shift_template_id', onDelete: 'CASCADE' });
+HrisUserEmploymentInfo.belongsTo(HrisUserShiftsTemplate, { foreignKey: 'shift_template_id' });
 
 Service.hasMany(LogsActivity, { foreignKey: 'service_id' });
 LogsActivity.belongsTo(Service, { foreignKey: 'service_id' });
@@ -217,7 +194,6 @@ module.exports = {
     HrisUserPasswordReset,
     HrisUserSalary,
     HrisUserServicePermission,
-    HrisUserShift,
     LogsActivity,
     ServiceFeature,
     Service,
