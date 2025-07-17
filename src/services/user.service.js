@@ -1,5 +1,6 @@
 const { Op } = require("sequelize");
-const { HrisUserAccount, HrisUserInfo, HrisUserAddress, HrisUserEmergencyContact, HrisUserEmploymentInfo, HrisUserDesignation, HrisUserShift, HrisUserSalary, Company, CompanyAddress, CompanyDepartment, CompanyDivision, CompanyInfo, CompanyJobTitle, CompanyIndustry, HrisUserSalaryAdjustmentType, HrisUserJobLevel, HrisUserEmploymentStatus, HrisUserEmploymentType, HrisUserHr201, CompanyOffice, CompanyTeam, HrisUserGovernmentId, HrisUserGovernmentIdType, HrisUserShiftsTemplate } = require("../models")
+const { HrisUserAccount, HrisUserInfo, HrisUserAddress, HrisUserEmergencyContact, HrisUserEmploymentInfo, HrisUserDesignation, HrisUserSalary, Company, CompanyAddress, CompanyDepartment, CompanyDivision, CompanyInfo, CompanyJobTitle, CompanyIndustry, HrisUserSalaryAdjustmentType, HrisUserJobLevel, HrisUserEmploymentStatus, HrisUserEmploymentType, HrisUserHr201, CompanyOffice, CompanyTeam, HrisUserGovernmentId, HrisUserGovernmentIdType, HrisUserShiftsTemplate } = require("../models");
+const sequelize = require("../config/db");
 
 exports.findAllHrisUserAccount = async () => {
     return await HrisUserAccount.findAll({
@@ -32,6 +33,9 @@ exports.findAllHrisUserAccount = async () => {
                     {
                         model: HrisUserEmploymentType
                     },
+                    {
+                        model: HrisUserShiftsTemplate
+                    }
                 ]
             },
             {
@@ -54,10 +58,6 @@ exports.findAllHrisUserAccount = async () => {
                             },
 
                         ]
-                    },
-                    {
-                        model: HrisUserShift,
-                        include: HrisUserShiftsTemplate,
                     },
                     {
                         model: CompanyJobTitle
@@ -115,6 +115,9 @@ exports.findHrisUserAccount = async (user_id) => {
                     {
                         model: HrisUserEmploymentType
                     },
+                    {
+                        model: HrisUserShiftsTemplate
+                    }
                 ]
             },
             {
@@ -134,13 +137,8 @@ exports.findHrisUserAccount = async (user_id) => {
                             {
                                 model: CompanyInfo,
                                 include: CompanyIndustry
-                            },
-
+                            }
                         ]
-                    },
-                    {
-                        model: HrisUserShift,
-                        include: HrisUserShiftsTemplate,
                     },
                     {
                         model: CompanyJobTitle
@@ -214,7 +212,10 @@ exports.findAllHrisUserAccountViaSearcyQuery = async (query) => {
                 include: [
                     { model: HrisUserJobLevel },
                     { model: HrisUserEmploymentStatus },
-                    { model: HrisUserEmploymentType }
+                    { model: HrisUserEmploymentType },
+                    {
+                        model: HrisUserShiftsTemplate
+                    }
                 ]
             },
             {
@@ -234,10 +235,6 @@ exports.findAllHrisUserAccountViaSearcyQuery = async (query) => {
                             }
                         ]
                     },
-                    {
-                        model: HrisUserShift,
-                        include: HrisUserShiftsTemplate
-                    },
                     { model: CompanyJobTitle },
                     { model: CompanyDepartment },
                     { model: CompanyDivision },
@@ -252,11 +249,96 @@ exports.findAllHrisUserAccountViaSearcyQuery = async (query) => {
 
 exports.findUserByEmail = async (user_email) => {
     return await HrisUserAccount.findOne({
-        where: { user_email }
+        where: { user_email },
+        include: {
+            model: HrisUserDesignation,
+            include: Company
+        }
     });
 }
 
-exports.createHrisUserAccount = async () => {
-    return
+exports.createHrisUserAccount = async (
+    hrisUserAccountData,
+    hrisUserInfoData,
+    hrisUserDesignationData,
+    hrisUserSalaryData,
+    hrisUserAddressCurrentData,
+    hrisUserAddressPermanentData,
+    hrisUserHr201Data,
+    hrisUserEmploymentInfoData,
+    hrisUserGovernmentIdData,
+    hrisUserEmergencyContactData
+) => {
+    return await sequelize.transaction(async (t) => {
+        const hrisUserAccount = await HrisUserAccount.create(
+            hrisUserAccountData,
+            { transaction: t }
+        );
+
+        const hrisUserInfo = await HrisUserInfo.create(
+            hrisUserInfoData,
+            { transaction: t }
+        );
+
+        const hrisUserDesignation = await HrisUserDesignation.create(
+            hrisUserDesignationData,
+            { transaction: t }
+        );
+
+        const hrisUserSalary = await HrisUserSalary.create(
+            hrisUserSalaryData,
+            { transaction: t }
+        );
+
+
+        //PERMANENT ADDRESS
+        const hrisUserAddressPermanent = await HrisUserAddress.create(
+            hrisUserAddressPermanentData,
+            { transaction: t }
+        );
+
+        //CURRENT ADDRESS
+        const hrisUserAddressCurrent = await HrisUserAddress.create(
+            hrisUserAddressCurrentData,
+            { transaction: t }
+        );
+
+
+        const hrisUserHr201 = await HrisUserHr201.create(
+            hrisUserHr201Data,
+            { transaction: t }
+        )
+
+        const hrisUserEmploymentInfo = await HrisUserEmploymentInfo.create(
+            hrisUserEmploymentInfoData,
+            { transaction: t }
+        );
+
+        //governement ID/contribution
+        const hrisUserGovernmentId = await HrisUserGovernmentId.bulkCreate(
+            hrisUserGovernmentIdData,
+            { transaction: t },
+        )
+
+        //emergency contacts
+        const hrisUserEmergencyContact = await HrisUserEmergencyContact.bulkCreate(
+            hrisUserEmergencyContactData,
+            { transaction: t },
+        );
+
+
+        return {
+            hrisUserAccount,
+            hrisUserInfo,
+            hrisUserDesignation,
+            hrisUserSalary,
+            hrisUserAddressPermanent,
+            hrisUserAddressCurrent,
+            hrisUserHr201,
+            hrisUserEmploymentInfo,
+            hrisUserGovernmentId,
+            hrisUserEmergencyContact,
+        };
+    });
 }
 

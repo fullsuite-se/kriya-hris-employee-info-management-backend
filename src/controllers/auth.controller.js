@@ -13,8 +13,10 @@ exports.login = async (req, res) => {
         const user = await checkLoginCredentials(user_email, password);
 
         const token = jwt.sign({
-            user_id: user.user_id,
-            user_email: user.user_email,
+            system_user_id: user.user_id,
+            system_user_email: user.user_email,
+            system_company_Id: user.HrisUserDesignation.Company.company_id, 
+
         },
             process.env.JWT_SECRET,
             { expiresIn: "10h" }

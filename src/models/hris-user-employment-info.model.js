@@ -27,7 +27,8 @@ const HrisUserEmploymentInfo = sequelize.define(
         },
         date_hired: {
             type: DataTypes.DATEONLY,
-            allowNull: false
+            allowNull: false,
+            defaultValue: DataTypes.NOW()
         },
         date_regularization: {
             type: DataTypes.DATEONLY,

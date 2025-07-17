@@ -23,7 +23,7 @@ const HrisUserEmergencyContact = sequelize.define(
         },
         middle_name: {
             type: DataTypes.STRING(50),
-            allowNull: false
+            allowNull: true
         },
         last_name: {
             type: DataTypes.STRING(50),

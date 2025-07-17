@@ -9,10 +9,6 @@ const HrisUserAccount = sequelize.define(
             type: DataTypes.CHAR(36),
             primaryKey: true,
             allowNull: false,
-            // references: {
-            //     model: 'hris_user_designations',
-            //     key: 'user_id',
-            // }
         },
         user_email: {
             type: DataTypes.STRING(100),
@@ -20,7 +16,7 @@ const HrisUserAccount = sequelize.define(
             unique: true
         },
         user_password: {
-            type: DataTypes.STRING(100),
+            type: DataTypes.STRING(200),
             allowNull: false
         },
         user_type: {
@@ -37,7 +33,7 @@ const HrisUserAccount = sequelize.define(
         },
         is_deactivated: {
             type: DataTypes.TINYINT,
-            defaultValue: 1
+            defaultValue: 0
         },
         refresh_token: {
             type: DataTypes.TEXT,
