@@ -1,4 +1,4 @@
-const { findAllCompanies, findOneCompany } = require("../../services/company.service");
+const { findAllCompanies, findOneCompany } = require("../../services/company-services/company.service");
 
 exports.getCompanies = async (req, res) => {
 
