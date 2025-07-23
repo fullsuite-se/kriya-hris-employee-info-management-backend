@@ -1,5 +1,7 @@
 const jwt = require("jsonwebtoken");
 const { checkLoginCredentials } = require("../services/auth.service");
+const { getUserServicePermission } = require("../services/access-control/hris-user-service-permission.service");
+const { getUserAccessPermissions } = require("../services/access-control/hris-user-access-permission.service");
 require("dotenv").config();
 
 exports.login = async (req, res) => {
@@ -11,12 +13,15 @@ exports.login = async (req, res) => {
 
     try {
         const user = await checkLoginCredentials(user_email, password);
+        const servicePermissions = await getUserServicePermission(user.user_id);
+        const accessPermissions = await getUserAccessPermissions(user.user_id);
 
         const token = jwt.sign({
             system_user_id: user.user_id,
             system_user_email: user.user_email,
-            system_company_Id: user.HrisUserDesignation.Company.company_id, 
-
+            system_company_id: user.HrisUserDesignations[0].Company.company_id,
+            servicePermissions,
+            accessPermissions,
         },
             process.env.JWT_SECRET,
             { expiresIn: "10h" }
