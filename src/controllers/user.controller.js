@@ -32,7 +32,7 @@ exports.createHrisUserAccount = async (req, res) => {
     const { system_user_id, system_user_email, system_company_id } = req.user;
 
     if ([system_user_id, system_user_email, system_company_id].some(v => !v)) {
-        return res.status(400).json({ message: "The client sent a malformed or incomplete request" });
+        return res.status(400).json({ message: "Cannot extract system user. The client sent a malformed or incomplete request" });
     }
 
     const {
@@ -108,7 +108,7 @@ exports.createHrisUserAccount = async (req, res) => {
     }
 
 
-    if (![
+    if ([
         //hris_user_accounts
         user_id,
         user_email,
@@ -244,8 +244,7 @@ exports.createHrisUserAccount = async (req, res) => {
         return res.status(201).json({
             message: "User account created successfully",
             data: {
-                user_id: newUser.userAccount.user_id,
-                user_email: newUser.userAccount.user_email
+                ...newUser
             }
         });
     } catch (error) {
