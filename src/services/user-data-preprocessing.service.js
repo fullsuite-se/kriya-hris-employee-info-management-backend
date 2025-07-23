@@ -115,7 +115,7 @@ exports.prepareNewHrisUserAccountData = (system_user_id, system_user_email, syst
 
     const hrisUserEmergencyContactData = userData.emergency_contacts.map(userEmContact => ({
         user_emergency_contact_id: generateUUIV4(),
-        user_id: system_user_id,
+        user_id: userData.user_id,
         first_name: userEmContact.first_name,
         middle_name: userEmContact.middle_name,
         last_name: userEmContact.last_name,
