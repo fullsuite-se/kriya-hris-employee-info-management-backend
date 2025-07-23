@@ -11,11 +11,12 @@ const hrisUserSalaryAdjustmentTypeController = require("../controllers/employmen
 const hrisUserJobLevelController = require("../controllers/employment-controllers/hris-user-job-level.controller");
 const hrisUserEmploymentStatusController = require("../controllers/employment-controllers/hris-user-employment-status.controller");
 const hrisUserEmploymentTypeController = require("../controllers/employment-controllers/hris-user-employement-type.controller");
+const { authenticateJWTToken } = require("../middleware/auth.middleware");
 
 //base: /hris-user-accounts
-router.get('/', userController.getHrisUserAccounts); //search after ? (e.g., ?query=admin)
-router.post('/', userController.createHrisUserAccount);
-router.get('/:user_id', userController.getHrisUserAccount);
+router.get('/', authenticateJWTToken, userController.getHrisUserAccounts); //search after ? (e.g., ?query=admin)
+router.post('/', authenticateJWTToken, userController.createHrisUserAccount);
+router.get('/:user_id', authenticateJWTToken, userController.getHrisUserAccount);
 
 // //employment-info
 router.get('/:user_id/employment-info', hrisUserEmploymentInfoController.getOne);
