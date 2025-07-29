@@ -27,11 +27,11 @@ router.patch('/:company_id/offices/:office_id', companyOfficeController.update);
 router.delete('/:company_id/offices/:office_id', companyOfficeController.delete);
 
 //company-departments
-router.post('/:company_id/deparments', companyDepartmentController.create); //create new department
+router.post('/:company_id/departments', companyDepartmentController.create); //create new department
 router.get('/:company_id/departments', companyDepartmentController.getAll); //get all departmenet
-router.get('/:company_id/deparments/:department_id', companyDepartmentController.getOne);
-router.patch('/:company_id/deparments/:department_id', companyDepartmentController.update);
-router.delete('/:company_id/deparments/:department_id', companyDepartmentController.delete);
+router.get('/:company_id/departments/:department_id', companyDepartmentController.getOne);
+router.patch('/:company_id/departments/:department_id', companyDepartmentController.update);
+router.delete('/:company_id/departments/:department_id', companyDepartmentController.delete);
 
 //company-division
 router.post('/:company_id/divisions', companyDivisionController.create); //create new department
