@@ -49,5 +49,7 @@ exports.delete = async (office_id) => {
 
     if (!office) throw new Error('No office found');
 
+    office.destroy();
+    
     return office;
 };

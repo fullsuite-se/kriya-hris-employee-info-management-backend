@@ -72,7 +72,7 @@ router.patch('/:user_id/gov-ids/:user_government_id', hrisUserGovernmentIdContro
 router.delete('/:user_id/gov-ids/:user_government_id', hrisUserGovernmentIdController.delete); //delete the user government_id_number
 
 //gov-ids/types
-router.get('gov-ids/types', hrisUserGovernmentIdTypeController.getAll);
+router.get('/gov-ids/types', hrisUserGovernmentIdTypeController.getAll);
 router.post('/gov-ids/types', hrisUserGovernmentIdTypeController.create); //adds new id types
 // router.get('gov-ids/types/:government_id_type_id',);
 // router.patch('gov-ids/types/:government_id_type_id',);
