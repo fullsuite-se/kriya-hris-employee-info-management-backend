@@ -11,7 +11,7 @@ app.use('/static', express.static(path.join(__dirname, "public")));
 
 app.use(cors({
     origin: [process.env.VITE_FRONTEND_URL_DEVELOPMENT, process.env.VITE_FRONTEND_URL_PRODUCTION],
-    credentials: false,
+    credentials: true,
 }));
 
 //this is to run the db and sync the tables
@@ -25,9 +25,9 @@ app.use('/api', routes);
     try {
         await sequelize.authenticate();
         console.log('Connection has been established successfully.');
-        await sequelize.sync({
-            force: true,
-        });
+        // await sequelize.sync({
+        //     force: true,
+        // });
     } catch (error) {
         console.error('Unable to connect to the database:', error);
     }

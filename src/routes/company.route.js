@@ -35,7 +35,7 @@ router.delete('/:company_id/departments/:department_id', companyDepartmentContro
 
 //company-division
 router.post('/:company_id/divisions', companyDivisionController.create); //create new department
-router.get('/:company_id/division', companyDivisionController.getAll); //get all departmenet
+router.get('/:company_id/divisions', companyDivisionController.getAll); //get all departmenet
 router.get('/:company_id/divisions/:division_id', companyDivisionController.getOne);
 router.patch('/:company_id/divisions/:division_id', companyDivisionController.update);
 router.delete('/:company_id/divisions/:division_id', companyDivisionController.delete);
