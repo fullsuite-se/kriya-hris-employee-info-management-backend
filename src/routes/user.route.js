@@ -16,8 +16,8 @@ const { authenticateJWTToken } = require("../middleware/auth.middleware");
 const { checkAuthorizationToAccessFeature } = require("../middleware/authorization.middleware");
 
 //base: /hris-user-accounts
-router.get('/', authenticateJWTToken, userController.getHrisUserAccounts); //search after ? (e.g., ?query=admin)
-// router.get('/', authenticateJWTToken, checkAuthorizationToAccessFeature([process.env.EMPLOYEE_MANAGEMENT]), userController.getHrisUserAccounts); //search after ? (e.g., ?query=admin)
+// router.get('/', authenticateJWTToken, userController.getHrisUserAccounts); //search after ? (e.g., ?query=admin)
+router.get('/', authenticateJWTToken, checkAuthorizationToAccessFeature([process.env.EMPLOYEE_MANAGEMENT]), userController.getHrisUserAccounts); //search after ? (e.g., ?query=admin)
 router.post('/', authenticateJWTToken, userController.createHrisUserAccount);
 router.get('/:user_id', authenticateJWTToken, userController.getHrisUserAccount);
 
