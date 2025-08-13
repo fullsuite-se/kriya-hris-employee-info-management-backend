@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-require("dotenv").config();
 const userController = require("../controllers/user.controller");
 const hrisUserEmploymentInfoController = require("../controllers/employment-controllers/hris-user-employment-info.controller");
 const hrisUserShiftTemplateController = require("../controllers/employment-controllers/hris-user-shifts-template.controller");
@@ -14,10 +13,11 @@ const hrisUserEmploymentStatusController = require("../controllers/employment-co
 const hrisUserEmploymentTypeController = require("../controllers/employment-controllers/hris-user-employement-type.controller");
 const { authenticateJWTToken } = require("../middleware/auth.middleware");
 const { checkAuthorizationToAccessFeature } = require("../middleware/authorization.middleware");
+const env = require("../config/env");
 
 //base: /hris-user-accounts
 // router.get('/', authenticateJWTToken, userController.getHrisUserAccounts); //search after ? (e.g., ?query=admin)
-router.get('/', authenticateJWTToken, checkAuthorizationToAccessFeature([process.env.EMPLOYEE_MANAGEMENT]), userController.getHrisUserAccounts); //search after ? (e.g., ?query=admin)
+router.get('/', authenticateJWTToken, checkAuthorizationToAccessFeature([env.EMPLOYEE_MANAGEMENT]), userController.getHrisUserAccounts); //search after ? (e.g., ?query=admin)
 router.post('/', authenticateJWTToken, userController.createHrisUserAccount);
 router.get('/:user_id', authenticateJWTToken, userController.getHrisUserAccount);
 

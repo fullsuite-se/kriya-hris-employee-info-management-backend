@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const { checkLoginCredentials, checkServiceAccess } = require("../services/auth.service");
 const { getUserServicePermission } = require("../services/access-control/hris-user-service-permission.service");
 const { getUserAccessPermissions } = require("../services/access-control/hris-user-access-permission.service");
-require("dotenv").config();
+const env = require("../config/env");
 
 exports.login = async (req, res) => {
     const { user_email, password, service } = req.body; //the service refer to the system trying to access the resources.
@@ -27,7 +27,7 @@ exports.login = async (req, res) => {
             servicePermissions,
             accessPermissions,
         },
-            process.env.JWT_SECRET,
+            env.JWT_SECRET,
             { expiresIn: "10h" }
         );
 

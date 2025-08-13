@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-require("dotenv").config();
+const env = require("../config/env");
 
 exports.authenticateJWTToken = (req, res, next) => {
     const header = req.headers['authorization'];
@@ -7,7 +7,7 @@ exports.authenticateJWTToken = (req, res, next) => {
 
     if (!token) return res.status(401).json({ message: "Unauthorized access. No token" });
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    jwt.verify(token, env.JWT_SECRET, (err, user) => {
         if (err) return res.status(403).json({ message: "Invalid token" });
 
         req.user = user;
