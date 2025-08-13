@@ -1,20 +1,24 @@
 const jwt = require("jsonwebtoken");
-const { checkLoginCredentials } = require("../services/auth.service");
+const { checkLoginCredentials, checkServiceAccess } = require("../services/auth.service");
 const { getUserServicePermission } = require("../services/access-control/hris-user-service-permission.service");
 const { getUserAccessPermissions } = require("../services/access-control/hris-user-access-permission.service");
 require("dotenv").config();
 
 exports.login = async (req, res) => {
-    const { user_email, password } = req.body;
+    const { user_email, password, service } = req.body; //the service refer to the system trying to access the resources.
 
-    if (!user_email || !password) {
+    if (!user_email || !password || !service) {
         return res.status(400).json({ message: "The client sent a malformed or incomplete request" })
     }
 
     try {
         const user = await checkLoginCredentials(user_email, password);
+
         const servicePermissions = await getUserServicePermission(user.user_id);
         const accessPermissions = await getUserAccessPermissions(user.user_id);
+
+        //check service
+        checkServiceAccess(service, servicePermissions);
 
         const token = jwt.sign({
             system_user_id: user.user_id,

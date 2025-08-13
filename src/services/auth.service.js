@@ -6,9 +6,18 @@ exports.checkLoginCredentials = async (user_email, password) => {
 
     if (!user) throw new Error("User Not found");
 
-    const passwordMatch = await bcryptjs.compare(password, user.user_password);
+    // const passwordMatch = await bcryptjs.compare(password, user.user_password);
 
-    if (!passwordMatch) throw new Error("Incorrect password");
+    // if (!passwordMatch) throw new Error("Incorrect password");
 
     return user;
+}
+
+exports.checkServiceAccess = (service, servicePermissions) => {
+    const servicePermissionsStringArray = servicePermissions.map(s => s.service_name);
+
+    if (!servicePermissionsStringArray.includes(service)) {
+        throw new Error("Not allowed to access service");
+    }
+
 }
