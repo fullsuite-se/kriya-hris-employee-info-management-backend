@@ -1,10 +1,12 @@
 const { prepareNewHrisUserAccountData } = require("../services/user-data-preprocessing.service");
-const { findAllHrisUserAccount, findHrisUserAccount, findAllHrisUserAccountViaSearcyQuery, createHrisUserAccount, findAllHrisUserAccountViaServiceFeatureAccess, findHrisUserAccountBasicInfo } = require("../services/user.service");
+const { findAllHrisUserAccount, findHrisUserAccount, findAllHrisUserAccountViaSearcyQuery, createHrisUserAccount, findAllHrisUserAccountViaServiceFeatureAccess, findHrisUserAccountBasicInfo, findAllHrisUserAccountViaServiceAccess } = require("../services/user.service");
 const bcryptjs = require('bcryptjs');
 
 exports.getHrisUserAccounts = async (req, res) => {
     const { query } = req.query;
     const { service_feature_id } = req.query;
+    const { service_id } = req.query;
+
     try {
         if (query) {
             const hrisUserAccounts = await findAllHrisUserAccountViaSearcyQuery(query);
@@ -13,6 +15,11 @@ exports.getHrisUserAccounts = async (req, res) => {
 
         if (service_feature_id) {
             const hrisUserAccounts = await findAllHrisUserAccountViaServiceFeatureAccess(service_feature_id);
+            return res.status(200).json({ message: "Users retrieved successfully", users: hrisUserAccounts })
+        }
+
+        if (service_id) {
+            const hrisUserAccounts = await findAllHrisUserAccountViaServiceAccess(service_id);
             return res.status(200).json({ message: "Users retrieved successfully", users: hrisUserAccounts })
         }
 

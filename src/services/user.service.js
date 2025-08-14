@@ -1,5 +1,5 @@
 const { Op } = require("sequelize");
-const { HrisUserAccount, HrisUserInfo, HrisUserAddress, HrisUserEmergencyContact, HrisUserEmploymentInfo, HrisUserDesignation, HrisUserSalary, Company, CompanyAddress, CompanyDepartment, CompanyDivision, CompanyInfo, CompanyJobTitle, CompanyIndustry, HrisUserSalaryAdjustmentType, HrisUserJobLevel, HrisUserEmploymentStatus, HrisUserEmploymentType, HrisUserHr201, CompanyOffice, CompanyTeam, HrisUserGovernmentId, HrisUserGovernmentIdType, HrisUserShiftsTemplate, HrisUserAccessPermission } = require("../models");
+const { HrisUserAccount, HrisUserInfo, HrisUserAddress, HrisUserEmergencyContact, HrisUserEmploymentInfo, HrisUserDesignation, HrisUserSalary, Company, CompanyAddress, CompanyDepartment, CompanyDivision, CompanyInfo, CompanyJobTitle, CompanyIndustry, HrisUserSalaryAdjustmentType, HrisUserJobLevel, HrisUserEmploymentStatus, HrisUserEmploymentType, HrisUserHr201, CompanyOffice, CompanyTeam, HrisUserGovernmentId, HrisUserGovernmentIdType, HrisUserShiftsTemplate, HrisUserAccessPermission, HrisUserServicePermission } = require("../models");
 const sequelize = require("../config/db");
 
 exports.findAllHrisUserAccount = async () => {
@@ -373,4 +373,24 @@ exports.findAllHrisUserAccountViaServiceFeatureAccess = async (service_feature_i
         ]
     });
 };
+
+
+exports.findAllHrisUserAccountViaServiceAccess = async (service_id) => {
+    return await HrisUserAccount.findAll({
+        include: [
+            {
+                model: HrisUserInfo,
+                required: true
+            },
+            {
+                model: HrisUserServicePermission,
+                required: true,
+                where: {
+                    service_id
+                }
+            }
+        ]
+    });
+};
+
 

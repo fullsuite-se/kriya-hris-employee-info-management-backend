@@ -25,12 +25,15 @@ const env = require("../config/env");
  * /hris-user-accounts/ fetches all users
  * ?query support search based on email and name.
  * ?service_feature_id support searching users with an access to a feature (can approve, can edit payroll)
+ * ?service_id support searching users with an access to service (ats, payroll, suitelifer,)
  * **/
+
 router.get('/', authenticateJWTToken, userController.getHrisUserAccounts);
 // router.get('/', authenticateJWTToken, checkAuthorizationToAccessFeature([env.EMPLOYEE_MANAGEMENT]), userController.getHrisUserAccounts);
 router.post('/', authenticateJWTToken, userController.createHrisUserAccount);
 router.get('/:user_id', authenticateJWTToken, userController.getHrisUserAccount);
 router.get('/:user_id/basic-info', authenticateJWTToken, userController.getHrisUserAccountBasicInfo);
+
 
 // //employment-info
 router.get('/:user_id/employment-info', hrisUserEmploymentInfoController.getOne);
