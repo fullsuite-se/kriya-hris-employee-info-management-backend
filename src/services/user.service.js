@@ -1,5 +1,5 @@
 const { Op } = require("sequelize");
-const { HrisUserAccount, HrisUserInfo, HrisUserAddress, HrisUserEmergencyContact, HrisUserEmploymentInfo, HrisUserDesignation, HrisUserSalary, Company, CompanyAddress, CompanyDepartment, CompanyDivision, CompanyInfo, CompanyJobTitle, CompanyIndustry, HrisUserSalaryAdjustmentType, HrisUserJobLevel, HrisUserEmploymentStatus, HrisUserEmploymentType, HrisUserHr201, CompanyOffice, CompanyTeam, HrisUserGovernmentId, HrisUserGovernmentIdType, HrisUserShiftsTemplate } = require("../models");
+const { HrisUserAccount, HrisUserInfo, HrisUserAddress, HrisUserEmergencyContact, HrisUserEmploymentInfo, HrisUserDesignation, HrisUserSalary, Company, CompanyAddress, CompanyDepartment, CompanyDivision, CompanyInfo, CompanyJobTitle, CompanyIndustry, HrisUserSalaryAdjustmentType, HrisUserJobLevel, HrisUserEmploymentStatus, HrisUserEmploymentType, HrisUserHr201, CompanyOffice, CompanyTeam, HrisUserGovernmentId, HrisUserGovernmentIdType, HrisUserShiftsTemplate, HrisUserAccessPermission } = require("../models");
 const sequelize = require("../config/db");
 
 exports.findAllHrisUserAccount = async () => {
@@ -167,6 +167,19 @@ exports.findHrisUserAccount = async (user_id) => {
 
     return hrisUserAccount;
 }
+
+exports.findHrisUserAccountBasicInfo = async (user_id) => {
+    const hrisUserAccount = await HrisUserAccount.findOne({
+        where: { user_id },
+        include: HrisUserInfo,
+    });
+
+    if (!hrisUserAccount) throw new Error(`No user found with the user_id: ${user_id}`);
+
+    return hrisUserAccount;
+}
+
+
 
 exports.findAllHrisUserAccountViaSearcyQuery = async (query) => {
     return await HrisUserAccount.findAll({
@@ -341,4 +354,23 @@ exports.createHrisUserAccount = async (
         };
     });
 }
+
+
+exports.findAllHrisUserAccountViaServiceFeatureAccess = async (service_feature_id) => {
+    return await HrisUserAccount.findAll({
+        include: [
+            {
+                model: HrisUserInfo,
+                required: true
+            },
+            {
+                model: HrisUserAccessPermission,
+                required: true,
+                where: {
+                    service_feature_id
+                }
+            }
+        ]
+    });
+};
 

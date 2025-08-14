@@ -1,12 +1,18 @@
 const { prepareNewHrisUserAccountData } = require("../services/user-data-preprocessing.service");
-const { findAllHrisUserAccount, findHrisUserAccount, findAllHrisUserAccountViaSearcyQuery, createHrisUserAccount } = require("../services/user.service");
+const { findAllHrisUserAccount, findHrisUserAccount, findAllHrisUserAccountViaSearcyQuery, createHrisUserAccount, findAllHrisUserAccountViaServiceFeatureAccess, findHrisUserAccountBasicInfo } = require("../services/user.service");
 const bcryptjs = require('bcryptjs');
 
 exports.getHrisUserAccounts = async (req, res) => {
     const { query } = req.query;
+    const { service_feature_id } = req.query;
     try {
         if (query) {
             const hrisUserAccounts = await findAllHrisUserAccountViaSearcyQuery(query);
+            return res.status(200).json({ message: "Users retrieved successfully", users: hrisUserAccounts })
+        }
+
+        if (service_feature_id) {
+            const hrisUserAccounts = await findAllHrisUserAccountViaServiceFeatureAccess(service_feature_id);
             return res.status(200).json({ message: "Users retrieved successfully", users: hrisUserAccounts })
         }
 
@@ -14,6 +20,17 @@ exports.getHrisUserAccounts = async (req, res) => {
         res.status(200).json({ message: "Users retrieved successfully", users: hrisUserAccounts })
     } catch (error) {
         res.status(500).json({ message: "Failed to fetch hris user acccounts", error: error.message })
+    }
+}
+
+exports.getHrisUserAccountBasicInfo = async (req, res) => {
+    const { user_id } = req.params;
+
+    try {
+        const hrisUserAccount = await findHrisUserAccountBasicInfo(user_id);
+        res.status(200).json({ message: "User retrieved successfully", users: hrisUserAccount })
+    } catch (error) {
+        res.status(500).json({ message: "Failed to fetch hris user acccount", error: error.message })
     }
 }
 
@@ -255,3 +272,4 @@ exports.createHrisUserAccount = async (req, res) => {
         });
     }
 };
+

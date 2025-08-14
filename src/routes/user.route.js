@@ -1,3 +1,8 @@
+/**
+ * authenticateJWTToken middleware checks if access token is present
+ * checkAuthorizationToAccessFeature middleware checks if user has access to features
+ * **/
+
 const express = require("express");
 const router = express.Router();
 const userController = require("../controllers/user.controller");
@@ -16,10 +21,16 @@ const { checkAuthorizationToAccessFeature } = require("../middleware/authorizati
 const env = require("../config/env");
 
 //base: /hris-user-accounts
-// router.get('/', authenticateJWTToken, userController.getHrisUserAccounts); //search after ? (e.g., ?query=admin)
-router.get('/', authenticateJWTToken, checkAuthorizationToAccessFeature([env.EMPLOYEE_MANAGEMENT]), userController.getHrisUserAccounts); //search after ? (e.g., ?query=admin)
+/**
+ * /hris-user-accounts/ fetches all users
+ * ?query support search based on email and name.
+ * ?service_feature_id support searching users with an access to a feature (can approve, can edit payroll)
+ * **/
+router.get('/', authenticateJWTToken, userController.getHrisUserAccounts);
+// router.get('/', authenticateJWTToken, checkAuthorizationToAccessFeature([env.EMPLOYEE_MANAGEMENT]), userController.getHrisUserAccounts);
 router.post('/', authenticateJWTToken, userController.createHrisUserAccount);
 router.get('/:user_id', authenticateJWTToken, userController.getHrisUserAccount);
+router.get('/:user_id/basic-info', authenticateJWTToken, userController.getHrisUserAccountBasicInfo);
 
 // //employment-info
 router.get('/:user_id/employment-info', hrisUserEmploymentInfoController.getOne);
