@@ -34,8 +34,8 @@ exports.getHrisUserAccountBasicInfo = async (req, res) => {
     const { user_id } = req.params;
 
     try {
-        const hrisUserAccount = await findHrisUserAccountBasicInfo(user_id);
-        res.status(200).json({ message: "User retrieved successfully", users: hrisUserAccount })
+        const user = await findHrisUserAccountBasicInfo(user_id);
+        res.status(200).json({ message: "User retrieved successfully", user });
     } catch (error) {
         res.status(500).json({ message: "Failed to fetch hris user acccount", error: error.message })
     }

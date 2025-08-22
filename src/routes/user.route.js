@@ -16,7 +16,7 @@ const hrisUserSalaryAdjustmentTypeController = require("../controllers/employmen
 const hrisUserJobLevelController = require("../controllers/employment-controllers/hris-user-job-level.controller");
 const hrisUserEmploymentStatusController = require("../controllers/employment-controllers/hris-user-employment-status.controller");
 const hrisUserEmploymentTypeController = require("../controllers/employment-controllers/hris-user-employement-type.controller");
-const { authenticateJWTToken } = require("../middleware/auth.middleware");
+const { authenticateJWTToken, authenticateAPIKey } = require("../middleware/auth.middleware");
 const { checkAuthorizationToAccessFeature } = require("../middleware/authorization.middleware");
 const env = require("../config/env");
 
@@ -32,7 +32,8 @@ router.get('/', authenticateJWTToken, userController.getHrisUserAccounts);
 // router.get('/', authenticateJWTToken, checkAuthorizationToAccessFeature([env.EMPLOYEE_MANAGEMENT]), userController.getHrisUserAccounts);
 router.post('/', authenticateJWTToken, userController.createHrisUserAccount);
 router.get('/:user_id', authenticateJWTToken, userController.getHrisUserAccount);
-router.get('/:user_id/basic-info', authenticateJWTToken, userController.getHrisUserAccountBasicInfo);
+// router.get('/:user_id/basic-info', authenticateJWTToken, userController.getHrisUserAccountBasicInfo);
+router.get('/:user_id/basic-info', authenticateAPIKey, userController.getHrisUserAccountBasicInfo);
 
 
 // //employment-info

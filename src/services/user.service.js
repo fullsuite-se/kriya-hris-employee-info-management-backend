@@ -168,16 +168,56 @@ exports.findHrisUserAccount = async (user_id) => {
     return hrisUserAccount;
 }
 
+// exports.findHrisUserAccountBasicInfo = async (user_id) => {
+//     const hrisUserAccount = await HrisUserAccount.findOne({
+//         where: { user_id },
+//         include: HrisUserInfo,
+//         raw: true,
+//         nest: false,
+//     });
+
+//     if (!hrisUserAccount) throw new Error(`No user found with the user_id: ${user_id}`);
+
+//     return hrisUserAccount;
+// }
+
+
+// exports.findHrisUserAccountBasicInfo = async (user_id) => {
+//     const hrisUserInfo = await HrisUserInfo.findOne({
+//         attributes: ['user_id', 'first_name', 'last_name', 'user_pic', 'contact_number'],
+//         where: { user_id },
+//     });
+
+//     if (!hrisUserInfo) throw new Error(`No user found with the user_id: ${user_id}`);
+
+//     return hrisUserInfo;
+// }
+
 exports.findHrisUserAccountBasicInfo = async (user_id) => {
-    const hrisUserAccount = await HrisUserAccount.findOne({
+    const hrisUserInfo = await HrisUserInfo.findOne({
+        attributes: [
+            'user_id',
+            'first_name',
+            'last_name',
+            'user_pic',
+            'contact_number',
+            [
+                sequelize.literal(`(
+          SELECT user_email 
+          FROM hris_user_accounts 
+          WHERE hris_user_accounts.user_id = HrisUserInfo.user_id
+        )`),
+                'user_email'
+            ]
+        ],
         where: { user_id },
-        include: HrisUserInfo,
+        raw: true
     });
 
-    if (!hrisUserAccount) throw new Error(`No user found with the user_id: ${user_id}`);
+    if (!hrisUserInfo) throw new Error(`No user found with the user_id: ${user_id}`);
 
-    return hrisUserAccount;
-}
+    return hrisUserInfo;
+};
 
 
 
