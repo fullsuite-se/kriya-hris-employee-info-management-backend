@@ -33,8 +33,12 @@ router.get('/', authenticateJWTToken, userController.getHrisUserAccounts);
 router.post('/', authenticateJWTToken, userController.createHrisUserAccount);
 router.get('/:user_id', authenticateJWTToken, userController.getHrisUserAccount);
 // router.get('/:user_id/basic-info', authenticateJWTToken, userController.getHrisUserAccountBasicInfo);
+
+//this is for payroll backend to hris-backend communication. 
 router.get('/:user_id/basic-info', authenticateAPIKey, userController.getHrisUserAccountBasicInfo);
 
+//for payroll frontnd to hris backend
+router.get('/user/me/basic-info', authenticateJWTToken, userController.getHrisUserAccountBasicInfoPayrollFrontend);
 
 // //employment-info
 router.get('/:user_id/employment-info', hrisUserEmploymentInfoController.getOne);

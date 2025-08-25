@@ -41,6 +41,18 @@ exports.getHrisUserAccountBasicInfo = async (req, res) => {
     }
 }
 
+exports.getHrisUserAccountBasicInfoPayrollFrontend = async (req, res) => {
+    const { system_user_id } = req.user;
+
+    try {
+        const user = await findHrisUserAccountBasicInfo(system_user_id);
+        res.status(200).json({ message: "User retrieved successfully", user });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to fetch hris user acccount", error: error.message })
+    }
+}
+
+
 exports.getHrisUserAccount = async (req, res) => {
     const { user_id } = req.params;
 
