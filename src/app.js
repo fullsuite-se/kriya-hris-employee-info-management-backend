@@ -7,7 +7,8 @@ const routes = require("./routes");
 const env = require("./config/env");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use('/static', express.static(path.join(__dirname, "public")));
+app.use('/static', express.static(path.join(__dirname, "..", "public")));
+
 
 app.use(cors({
     origin: [env.VITE_FRONTEND_URL_DEVELOPMENT, env.VITE_FRONTEND_URL_PRODUCTION],
@@ -38,7 +39,7 @@ app.use('/api', routes);
 
 
 app.get('/', (req, res) => {
-    res.status(200).json({ message: "okay" })
+    return res.sendFile(path.join(__dirname, "..", "public", "index.html"));
 });
 
 module.exports = app; 
