@@ -14,7 +14,7 @@ exports.update = async (
     user_salary_id,
     base_pay,
     salary_adjustment_type_id,
-    date,
+    date_salary_created,
 ) => {
     const salary = await HrisUserSalary.findByPk(user_salary_id);
 
@@ -23,7 +23,7 @@ exports.update = async (
     salary.set({
         base_pay,
         salary_adjustment_type_id,
-        date,
+        date_salary_created,
         updated_at: getIsoUTCNow(),
     });
     salary.save();

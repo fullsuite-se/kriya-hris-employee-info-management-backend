@@ -27,6 +27,10 @@ const CompanyInfo = sequelize.define(
                 key: 'industry_id',
             }
         },
+        industry_type: {
+            type: DataTypes.STRING(100),
+            allowNull: true
+        },
         business_type: {
             type: DataTypes.ENUM(
                 companyInfosBusinessTypeEnum.SOLE_PROPRIETORSHIP,
