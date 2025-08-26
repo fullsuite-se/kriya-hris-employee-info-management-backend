@@ -4,7 +4,9 @@ const {
 const {
   findAllHrisUserAccount,
   findHrisUserAccount,
+  findAllHrisUserAccountViaSearcyQuery,
   createHrisUserAccount,
+  
   updatePersonalDetails,
   isUserIdTaken,
   updateContactInfo,
@@ -15,57 +17,64 @@ const {
   updateDesignation,
   updateEmploymentTimeline,
   findAllHrisUserAccountViaFilter,
+  
+  findAllHrisUserAccountViaServiceFeatureAccess,
+  findHrisUserAccountBasicInfo,
+  findAllHrisUserAccountViaServiceAccess
 } = require("../services/user.service");
 const bcryptjs = require("bcryptjs");
 
-// exports.getHrisUserAccounts = async (req, res) => {
-//   const { query } = req.query;
-//   try {
-//     if (query) {
-//       const hrisUserAccounts = await findAllHrisUserAccountViaSearchQuery(
-//         query
-//       );
-//       return res.status(200).json({
-//         message: "Users retrieved successfully",
-//         users: hrisUserAccounts,
-//       });
-//     }
-
-//     const hrisUserAccounts = await findAllHrisUserAccount();
-//     res.status(200).json({
-//       message: "Users retrieved successfully",
-//       users: hrisUserAccounts,
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       message: "Failed to fetch hris user acccounts",
-//       error: error.message,
-//     });
-//   }
-// };
-
-// controller
 
 exports.getHrisUserAccounts = async (req, res) => {
-  try {
-    const filters = req.query;
+    const { query } = req.query;
+    const { service_feature_id } = req.query;
+    const { service_id } = req.query;
 
-    const hrisUserAccounts = Object.keys(filters).length
-      ? await findAllHrisUserAccountViaFilter(filters)
-      : await findAllHrisUserAccount();
+    try {
+        if (query) {
+            const hrisUserAccounts = await findAllHrisUserAccountViaSearcyQuery(query);
+            return res.status(200).json({ message: "Users retrieved successfully", users: hrisUserAccounts })
+        }
 
-    return res.status(200).json({
-      message: "Users retrieved successfully",
-      users: hrisUserAccounts,
-      length: hrisUserAccounts.length,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to fetch hris user accounts",
-      error: error.message,
-    });
-  }
-};
+        if (service_feature_id) {
+            const hrisUserAccounts = await findAllHrisUserAccountViaServiceFeatureAccess(service_feature_id);
+            return res.status(200).json({ message: "Users retrieved successfully", users: hrisUserAccounts })
+        }
+
+        if (service_id) {
+            const hrisUserAccounts = await findAllHrisUserAccountViaServiceAccess(service_id);
+            return res.status(200).json({ message: "Users retrieved successfully", users: hrisUserAccounts })
+        }
+
+        const hrisUserAccounts = await findAllHrisUserAccount();
+        res.status(200).json({ message: "Users retrieved successfully", users: hrisUserAccounts })
+    } catch (error) {
+        res.status(500).json({ message: "Failed to fetch hris user acccounts", error: error.message })
+    }
+}
+
+exports.getHrisUserAccountBasicInfo = async (req, res) => {
+    const { user_id } = req.params;
+
+    try {
+        const user = await findHrisUserAccountBasicInfo(user_id);
+        res.status(200).json({ message: "User retrieved successfully", user });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to fetch hris user acccount", error: error.message })
+    }
+}
+
+exports.getHrisUserAccountBasicInfoPayrollFrontend = async (req, res) => {
+    const { system_user_id } = req.user;
+
+    try {
+        const user = await findHrisUserAccountBasicInfo(system_user_id);
+        res.status(200).json({ message: "User retrieved successfully", user });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to fetch hris user acccount", error: error.message })
+    }
+}
+
 
 exports.getHrisUserAccount = async (req, res) => {
   const { user_id } = req.params;
