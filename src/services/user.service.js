@@ -169,29 +169,31 @@ exports.findHrisUserAccount = async (user_id) => {
 }
 
 // exports.findHrisUserAccountBasicInfo = async (user_id) => {
-//     const hrisUserAccount = await HrisUserAccount.findOne({
-//         where: { user_id },
-//         include: HrisUserInfo,
-//         raw: true,
-//         nest: false,
-//     });
-
-//     if (!hrisUserAccount) throw new Error(`No user found with the user_id: ${user_id}`);
-
-//     return hrisUserAccount;
-// }
-
-
-// exports.findHrisUserAccountBasicInfo = async (user_id) => {
 //     const hrisUserInfo = await HrisUserInfo.findOne({
-//         attributes: ['user_id', 'first_name', 'last_name', 'user_pic', 'contact_number'],
+//         attributes: [
+//             'user_id',
+//             'first_name',
+//             'last_name',
+//             'user_pic',
+//             'contact_number',
+//             [
+//                 sequelize.literal(`(
+//           SELECT user_email 
+//           FROM hris_user_accounts 
+//           WHERE hris_user_accounts.user_id = HrisUserInfo.user_id
+//         )`),
+//                 'user_email'
+//             ]
+//         ],
 //         where: { user_id },
+//         raw: true
 //     });
 
 //     if (!hrisUserInfo) throw new Error(`No user found with the user_id: ${user_id}`);
 
 //     return hrisUserInfo;
-// }
+// };
+
 
 exports.findHrisUserAccountBasicInfo = async (user_id) => {
     const hrisUserInfo = await HrisUserInfo.findOne({
@@ -203,11 +205,24 @@ exports.findHrisUserAccountBasicInfo = async (user_id) => {
             'contact_number',
             [
                 sequelize.literal(`(
-          SELECT user_email 
-          FROM hris_user_accounts 
-          WHERE hris_user_accounts.user_id = HrisUserInfo.user_id
-        )`),
+                    SELECT user_email 
+                    FROM hris_user_accounts 
+                    WHERE hris_user_accounts.user_id = HrisUserInfo.user_id
+                )`),
                 'user_email'
+            ],
+            [
+                sequelize.literal(`(
+                    SELECT job_title 
+                    FROM company_job_titles 
+                    WHERE company_job_titles.job_title_id = (
+                        SELECT job_title_id 
+                        FROM hris_user_designations 
+                        WHERE hris_user_designations.user_id = HrisUserInfo.user_id
+                        LIMIT 1
+                    )
+                )`),
+                'job_title'
             ]
         ],
         where: { user_id },
