@@ -7,6 +7,7 @@ const companyDepartmentController = require("../controllers/company-controllers/
 const companyDivisionController = require("../controllers//company-controllers/company-division.controller");
 const companyJobTitleController = require("../controllers/company-controllers/company-job.controller");
 const companyIndustryController = require("../controllers/company-controllers/company-industry.controller");
+const { authenticateJWTToken } = require("../middleware/auth.middleware");
 
 //company
 router.get('/', companyController.getCompanies);
@@ -35,7 +36,7 @@ router.delete('/:company_id/departments/:department_id', companyDepartmentContro
 
 //company-division
 router.post('/:company_id/divisions', companyDivisionController.create); //create new department
-router.get('/:company_id/division', companyDivisionController.getAll); //get all departmenet
+router.get('/:company_id/divisions', companyDivisionController.getAll); //get all departmenet
 router.get('/:company_id/divisions/:division_id', companyDivisionController.getOne);
 router.patch('/:company_id/divisions/:division_id', companyDivisionController.update);
 router.delete('/:company_id/divisions/:division_id', companyDivisionController.delete);
@@ -53,5 +54,14 @@ router.get('/:company_id/job-industries', companyIndustryController.getAll); //g
 // router.get('/:company_id/job-industries/:industry_id',companyIndustryController.);
 router.patch('/:company_id/job-industries/:industry_id', companyIndustryController.update);
 router.delete('/:company_id/job-industries/:industry_id', companyIndustryController.delete);
+
+
+//company details update
+router.patch(
+  '/:company_id/company-details',
+  authenticateJWTToken,
+  companyController.updateCompanyDetails
+);
+
 
 module.exports = router; 

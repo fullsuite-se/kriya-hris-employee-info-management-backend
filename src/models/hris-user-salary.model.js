@@ -30,7 +30,7 @@ const HrisUserSalary = sequelize.define(
                 key: 'salary_adjustment_type_id',
             }
         },
-        date: {
+        date_salary_created: {
             type: DataTypes.DATEONLY,
             allowNull: false,
             defaultValue: DataTypes.NOW()

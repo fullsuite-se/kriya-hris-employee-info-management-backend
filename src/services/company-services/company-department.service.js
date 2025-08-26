@@ -27,7 +27,7 @@ exports.create = async (company_id, department_name) => {
     });
 };
 
-exports.update = async (department_id, company_id, department_name) => {
+exports.update = async (department_id, department_name) => {
     const department = await CompanyDepartment.findByPk(department_id);
 
     if (!department) throw new Error("No department found");

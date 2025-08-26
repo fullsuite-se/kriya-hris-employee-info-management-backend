@@ -27,6 +27,7 @@ exports.create = async (req, res) => {
     const { department_name } = req.body;
 
     try {
+
         const department = await companyDepartmentService.create(company_id, department_name);
         return res.status(201).json({ message: "Created successfully", department });
     } catch (error) {
@@ -39,6 +40,8 @@ exports.update = async (req, res) => {
     const { department_name } = req.body;
 
     try {
+    // console.log("departmenttt_id: ", department_id);
+    // console.log("new_department_nameee: ", department_name);
         const department = await companyDepartmentService.update(department_id, department_name);
         return res.status(200).json({ message: "Updated successfully", department });
     } catch (error) {

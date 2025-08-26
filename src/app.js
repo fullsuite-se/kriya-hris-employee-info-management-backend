@@ -14,7 +14,6 @@ app.use(cors({
     credentials: false,
 }));
 
-
 //this is to run the db and sync the tables
 require("./models");
 
@@ -26,9 +25,9 @@ app.use('/api', routes);
     try {
         await sequelize.authenticate();
         console.log('Connection has been established successfully.');
-        await sequelize.sync({
-            force: true,
-        });
+        // await sequelize.sync({
+        //     force: true,
+        // });
     } catch (error) {
         console.error('Unable to connect to the database:', error);
     }
