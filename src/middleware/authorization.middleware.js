@@ -1,47 +1,27 @@
-const { getUserAccessPermissions } = require("../services/access-control/hris-user-access-permission.service");
-
 exports.checkAuthorizationToAccessFeature = (requiredFeatures) => {
-    return async (req, res, next) => {
-        try {
-            const currentUser = req.user;
-            if (!currentUser) {
-                return res.status(401).json({ message: "Unauthorized. No user context." });
-            }
+    return (req, res, next) => {
+        const user = req.user;
+        const userFeatures = user?.accessPermissions || [];
 
-            // Normalize the required features into lowercase array
-            const requiredFeatureList = Array.isArray(requiredFeatures)
-                ? requiredFeatures.map(f => f.toLowerCase())
-                : [requiredFeatures.toLowerCase()];
+        // Normalize feature names to lowercase for case-insensitive comparison
+        const userFeatureNames = userFeatures.map(f => f.feature_name?.toLowerCase());
 
-            // Helper: check if any required features are missing
-            const findMissingFeatures = (availableFeatures) => {
-                const normalizedAvailable = availableFeatures.map(f => f.feature_name?.toLowerCase());
-                return requiredFeatureList.filter(reqFeature => !normalizedAvailable.includes(reqFeature));
-            };
+        // Ensure requiredFeatures is always an array
+        const required = Array.isArray(requiredFeatures) ? requiredFeatures : [requiredFeatures];
+        const normalizedRequired = required.map(f => f.toLowerCase());
 
-            // First Defence: Check against features derived from token
-            const userFeatures = currentUser.accessPermissions || [];
-            const missingFromUser = findMissingFeatures(userFeatures);
+        // Check for missing features
+        const missing = normalizedRequired.filter(f => !userFeatureNames.includes(f));
 
-            if (missingFromUser.length > 0) {
-                return res.status(403).json({
-                    message: `Access denied. Missing required features: ${missingFromUser.join(", ")}`
-                });
-            }
-
-            // Second Defence: Check against DB-level permission
-            const dbFeatures = await getUserAccessPermissions(currentUser.system_user_id);
-            const missingFromDb = findMissingFeatures(dbFeatures);
-
-            if (missingFromDb.length > 0) {
-                return res.status(403).json({
-                    message: `Access denied. Missing required features: ${missingFromDb.join(", ")}`
-                });
-            }
-
-            next();
-        } catch (error) {
-            next(error);
+        if (missing.length > 0) {
+            return res.status(403).json({
+                message: `Access denied. Missing required features: ${missing.join(", ")}`
+            });
         }
+
+        //second line of defence is to check the user service feature access in the database. 
+        //...
+
+        next();
     };
 };

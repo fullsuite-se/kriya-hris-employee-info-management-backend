@@ -1,5 +1,30 @@
 const { Op } = require("sequelize");
-const { HrisUserAccount, HrisUserInfo, HrisUserAddress, HrisUserEmergencyContact, HrisUserEmploymentInfo, HrisUserDesignation, HrisUserSalary, Company, CompanyAddress, CompanyDepartment, CompanyDivision, CompanyInfo, CompanyJobTitle, CompanyIndustry, HrisUserSalaryAdjustmentType, HrisUserJobLevel, HrisUserEmploymentStatus, HrisUserEmploymentType, HrisUserHr201, CompanyOffice, CompanyTeam, HrisUserGovernmentId, HrisUserGovernmentIdType, HrisUserShiftsTemplate, HrisUserAccessPermission, HrisUserServicePermission } = require("../models");
+const {
+  HrisUserAccount,
+  HrisUserInfo,
+  HrisUserAddress,
+  HrisUserEmergencyContact,
+  HrisUserEmploymentInfo,
+  HrisUserDesignation,
+  HrisUserSalary,
+  Company,
+  CompanyAddress,
+  CompanyDepartment,
+  CompanyDivision,
+  CompanyInfo,
+  CompanyJobTitle,
+  CompanyIndustry,
+  HrisUserSalaryAdjustmentType,
+  HrisUserJobLevel,
+  HrisUserEmploymentStatus,
+  HrisUserEmploymentType,
+  HrisUserHr201,
+  CompanyOffice,
+  CompanyTeam,
+  HrisUserGovernmentId,
+  HrisUserGovernmentIdType,
+  HrisUserShiftsTemplate,
+} = require("../models");
 const sequelize = require("../config/db");
 const { generateUUIV4 } = require("../utils/ids");
 const { buildUserFilters } = require("../utils/filter-builder");
@@ -87,93 +112,212 @@ exports.findAllHrisUserAccount = async () => {
 };
 
 exports.findHrisUserAccount = async (user_id) => {
-    const hrisUserAccount = await HrisUserAccount.findOne({
-        where: { user_id },
+  const hrisUserAccount = await HrisUserAccount.findOne({
+    where: { user_id },
+    include: [
+      {
+        model: HrisUserInfo,
+      },
+      {
+        model: HrisUserAddress,
+      },
+      {
+        model: HrisUserEmergencyContact,
+      },
+      {
+        model: HrisUserHr201,
+      },
+      {
+        model: HrisUserSalary,
+        include: HrisUserSalaryAdjustmentType,
+      },
+      {
+        model: HrisUserEmploymentInfo,
         include: [
-            {
-                model: HrisUserInfo,
-            },
-            {
-                model: HrisUserAddress,
-            },
-            {
-                model: HrisUserEmergencyContact,
-            },
-            {
-                model: HrisUserHr201,
-            },
-            {
-                model: HrisUserSalary,
-                include: HrisUserSalaryAdjustmentType,
-            },
-            {
-                model: HrisUserEmploymentInfo,
-                include: [
-                    {
-                        model: HrisUserJobLevel,
-                    },
-                    {
-                        model: HrisUserEmploymentStatus
-                    },
-                    {
-                        model: HrisUserEmploymentType
-                    },
-                    {
-                        model: HrisUserShiftsTemplate
-                    }
-                ]
-            },
-            {
-                model: HrisUserGovernmentId,
-                include: HrisUserGovernmentIdType
-            },
-            {
-                model: HrisUserDesignation,
-                include: [
-                    {
-                        model: Company,
-                        include: [
-                            {
-                                model: CompanyAddress,
-                            },
+          {
+            model: HrisUserJobLevel,
+          },
+          {
+            model: HrisUserEmploymentStatus,
+          },
+          {
+            model: HrisUserEmploymentType,
+          },
+          {
+            model: HrisUserShiftsTemplate,
+          },
+        ],
+      },
+      {
+        model: HrisUserGovernmentId,
+        include: HrisUserGovernmentIdType,
+      },
+      {
+        model: HrisUserDesignation,
+        include: [
+          {
+            model: Company,
+            include: [
+              {
+                model: CompanyAddress,
+              },
 
-                            {
-                                model: CompanyInfo,
-                                include: CompanyIndustry
-                            }
-                        ]
-                    },
-                    {
-                        model: CompanyJobTitle
-                    },
-                    {
-                        model: CompanyDepartment,
-                    },
-                    {
-                        model: CompanyDivision
-                    },
-                    {
-                        model: HrisUserAccount,
-                        as: "upline",
-                        include: [{ model: HrisUserInfo }],
-                    },
-                    {
-                        model: CompanyOffice,
-                    },
-                    {
-                        model: CompanyTeam,
-                    }
-                ]
-            }
-        ]
-    });
+              {
+                model: CompanyInfo,
+                include: CompanyIndustry,
+              },
+            ],
+          },
+          {
+            model: CompanyJobTitle,
+          },
+          {
+            model: CompanyDepartment,
+          },
+          {
+            model: CompanyDivision,
+          },
+          {
+            model: HrisUserAccount,
+            as: "upline",
+            include: [{ model: HrisUserInfo }],
+          },
+          {
+            model: CompanyOffice,
+          },
+          {
+            model: CompanyTeam,
+          },
+        ],
+      },
+    ],
+  });
 
-    if (!hrisUserAccount) throw new Error(`No user found with the user_id: ${user_id}`);
+  if (!hrisUserAccount)
+    throw new Error(`No user found with the user_id: ${user_id}`);
 
-    return hrisUserAccount;
-}
+  return hrisUserAccount;
+};
 
+// exports.findAllHrisUserAccountViaFilter = async (filters) => {
+//   const {
+//     whereAccount,
+//     whereEmploymentInfo,
+//     whereSalary,
+//     whereDesignation,
+//     whereInfo,
+//   } = buildUserFilters(filters);
 
+//   return await HrisUserAccount.findAll({
+//     where: whereAccount,
+//     include: [
+//       {
+//         model: HrisUserInfo,
+//         where: Object.keys(whereInfo).length ? whereInfo : undefined,
+//         required: Object.keys(whereInfo).length ? true : false,
+//       },
+//       {
+//         model: HrisUserEmploymentInfo,
+//         include: [{ model: HrisUserEmploymentStatus }],
+//         where: Object.keys(whereEmploymentInfo).length
+//           ? whereEmploymentInfo
+//           : undefined,
+//         required: Object.keys(whereEmploymentInfo).length ? true : false,
+//       },
+//       {
+//         model: HrisUserSalary,
+//         where: Object.keys(whereSalary).length ? whereSalary : undefined,
+//         required: Object.keys(whereSalary).length ? true : false,
+//       },
+//       {
+//         model: HrisUserDesignation,
+//         where: Object.keys(whereDesignation).length
+//           ? whereDesignation
+//           : undefined,
+//         required: Object.keys(whereDesignation).length ? true : false,
+//       },
+//     ],
+//   });
+// };
+
+// exports.findAllHrisUserAccountViaSearchQuery = async (query) => {
+//   return await HrisUserAccount.findAll({
+//     where: {
+//       [Op.or]: [
+//         {
+//           user_email: {
+//             [Op.like]: `%${query}%`,
+//           },
+//         },
+//         {
+//           "$HrisUserInfo.first_name$": {
+//             [Op.like]: `%${query}%`,
+//           },
+//         },
+//         {
+//           "$HrisUserInfo.last_name$": {
+//             [Op.like]: `%${query}%`,
+//           },
+//         },
+//       ],
+//     },
+//     include: [
+//       {
+//         model: HrisUserInfo,
+//         required: true, // IMPORTANT for the $field$ syntax to work
+//       },
+//       {
+//         model: HrisUserAddress,
+//       },
+//       {
+//         model: HrisUserEmergencyContact,
+//       },
+//       {
+//         model: HrisUserHr201,
+//       },
+//       {
+//         model: HrisUserSalary,
+//         include: HrisUserSalaryAdjustmentType,
+//       },
+//       {
+//         model: HrisUserEmploymentInfo,
+//         include: [
+//           { model: HrisUserJobLevel },
+//           { model: HrisUserEmploymentStatus },
+//           { model: HrisUserEmploymentType },
+//           {
+//             model: HrisUserShiftsTemplate,
+//           },
+//         ],
+//       },
+//       {
+//         model: HrisUserGovernmentId,
+//         include: HrisUserGovernmentIdType,
+//       },
+//       {
+//         model: HrisUserDesignation,
+//         include: [
+//           {
+//             model: Company,
+//             include: [
+//               { model: CompanyAddress },
+//               {
+//                 model: CompanyInfo,
+//                 include: CompanyIndustry,
+//               },
+//             ],
+//           },
+//           { model: CompanyJobTitle },
+//           { model: CompanyDepartment },
+//           { model: CompanyDivision },
+//           { model: HrisUserAccount }, // for upline
+//           { model: CompanyOffice },
+//           { model: CompanyTeam },
+//         ],
+//       },
+//     ],
+//   });
+// };
 
 exports.findAllHrisUserAccountViaFilter = async (filters) => {
   const {
@@ -256,129 +400,6 @@ exports.findAllHrisUserAccountViaFilter = async (filters) => {
     ],
   });
 };
-
-exports.findAllHrisUserAccountViaSearcyQuery = async (query) => {
-    return await HrisUserAccount.findAll({
-        where: {
-            [Op.or]: [
-                {
-                    user_email: {
-                        [Op.like]: `%${query}%`,
-                    }
-                },
-                {
-                    '$HrisUserInfo.first_name$': {
-                        [Op.like]: `%${query}%`,
-                    }
-                },
-                {
-                    '$HrisUserInfo.last_name$': {
-                        [Op.like]: `%${query}%`,
-                    }
-                }
-            ]
-        },
-        include: [
-            {
-                model: HrisUserInfo,
-                required: true // IMPORTANT for the $field$ syntax to work
-            },
-            {
-                model: HrisUserAddress,
-            },
-            {
-                model: HrisUserEmergencyContact,
-            },
-            {
-                model: HrisUserHr201,
-            },
-            {
-                model: HrisUserSalary,
-                include: HrisUserSalaryAdjustmentType,
-            },
-            {
-                model: HrisUserEmploymentInfo,
-                include: [
-                    { model: HrisUserJobLevel },
-                    { model: HrisUserEmploymentStatus },
-                    { model: HrisUserEmploymentType },
-                    {
-                        model: HrisUserShiftsTemplate
-                    }
-                ]
-            },
-            {
-                model: HrisUserGovernmentId,
-                include: HrisUserGovernmentIdType
-            },
-            {
-                model: HrisUserDesignation,
-                include: [
-                    {
-                        model: Company,
-                        include: [
-                            { model: CompanyAddress },
-                            {
-                                model: CompanyInfo,
-                                include: CompanyIndustry
-                            }
-                        ]
-                    },
-                    { model: CompanyJobTitle },
-                    { model: CompanyDepartment },
-                    { model: CompanyDivision },
-                    { model: HrisUserAccount }, // for upline
-                    { model: CompanyOffice },
-                    { model: CompanyTeam }
-                ]
-            }
-        ]
-    });
-};
-
-
-exports.findHrisUserAccountBasicInfo = async (user_id) => {
-    const hrisUserInfo = await HrisUserInfo.findOne({
-        attributes: [
-            'user_id',
-            'first_name',
-            'last_name',
-            'user_pic',
-            'contact_number',
-            [
-                sequelize.literal(`(
-                    SELECT user_email 
-                    FROM hris_user_accounts 
-                    WHERE hris_user_accounts.user_id = HrisUserInfo.user_id
-                )`),
-                'user_email'
-            ],
-            [
-                sequelize.literal(`(
-                    SELECT job_title 
-                    FROM company_job_titles 
-                    WHERE company_job_titles.job_title_id = (
-                        SELECT job_title_id 
-                        FROM hris_user_designations 
-                        WHERE hris_user_designations.user_id = HrisUserInfo.user_id
-                        LIMIT 1
-                    )
-                )`),
-                'job_title'
-            ]
-        ],
-        where: { user_id },
-        raw: true
-    });
-
-    if (!hrisUserInfo) throw new Error(`No user found with the user_id: ${user_id}`);
-
-    return hrisUserInfo;
-};
-
-
-
-
 
 exports.findUserByEmail = async (user_email) => {
   return await HrisUserAccount.findOne({
@@ -1001,43 +1022,3 @@ exports.updateEmploymentTimeline = async (user_id, updatedFields) => {
     return updatedEmploymentTimeline;
   });
 };
-
-exports.findAllHrisUserAccountViaServiceFeatureAccess = async (service_feature_id) => {
-    return await HrisUserAccount.findAll({
-        include: [
-            {
-                model: HrisUserInfo,
-                required: true
-            },
-            {
-                model: HrisUserAccessPermission,
-                required: true,
-                where: {
-                    service_feature_id
-                }
-            }
-        ]
-    });
-};
-
-
-exports.findAllHrisUserAccountViaServiceAccess = async (service_id) => {
-    return await HrisUserAccount.findAll({
-        include: [
-            {
-                model: HrisUserInfo,
-                required: true
-            },
-            {
-                model: HrisUserServicePermission,
-                required: true,
-                where: {
-                    service_id
-                }
-            }
-        ]
-    });
-};
-
-
-

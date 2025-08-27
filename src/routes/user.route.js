@@ -1,10 +1,6 @@
-/**
- * authenticateJWTToken middleware checks if access token is present
- * checkAuthorizationToAccessFeature middleware checks if user has access to features
- * **/
-
 const express = require("express");
 const router = express.Router();
+require("dotenv").config();
 const userController = require("../controllers/user.controller");
 const hrisUserEmploymentInfoController = require("../controllers/employment-controllers/hris-user-employment-info.controller");
 const hrisUserShiftTemplateController = require("../controllers/employment-controllers/hris-user-shifts-template.controller");
@@ -16,28 +12,88 @@ const hrisUserSalaryAdjustmentTypeController = require("../controllers/employmen
 const hrisUserJobLevelController = require("../controllers/employment-controllers/hris-user-job-level.controller");
 const hrisUserEmploymentStatusController = require("../controllers/employment-controllers/hris-user-employment-status.controller");
 const hrisUserEmploymentTypeController = require("../controllers/employment-controllers/hris-user-employement-type.controller");
-
-const { authenticateJWTToken, authenticateAPIKey } = require("../middleware/auth.middleware");
-const { checkAuthorizationToAccessFeature } = require("../middleware/authorization.middleware");
-const env = require("../config/env");
+const { authenticateJWTToken } = require("../middleware/auth.middleware");
+const {
+  checkAuthorizationToAccessFeature,
+} = require("../middleware/authorization.middleware");
 
 //base: /hris-user-accounts
-/**
- * /hris-user-accounts/ fetches all users
- * ?query support search based on email and name.
- * ?service_feature_id support searching users with an access to a feature (can approve, can edit payroll)
- * ?service_id support searching users with an access to service (ats, payroll, suitelifer,)
- * **/
+router.get("/", authenticateJWTToken, userController.getHrisUserAccounts); //search after ? (e.g., ?query=admin)
+// router.get('/', authenticateJWTToken, checkAuthorizationToAccessFeature([process.env.EMPLOYEE_MANAGEMENT]), userController.getHrisUserAccounts); //search after ? (e.g., ?query=admin)
+router.post("/", authenticateJWTToken, userController.createHrisUserAccount);
+router.get(
+  "/:user_id",
+  authenticateJWTToken,
+  userController.getHrisUserAccount
+);
 
-router.get('/', authenticateJWTToken, userController.getHrisUserAccounts);
-// router.get('/', authenticateJWTToken, checkAuthorizationToAccessFeature([env.EMPLOYEE_MANAGEMENT]), userController.getHrisUserAccounts);
-router.post('/', authenticateJWTToken, userController.createHrisUserAccount);
-router.get('/:user_id', authenticateJWTToken, userController.getHrisUserAccount);
-// router.get('/:user_id/basic-info', authenticateJWTToken, userController.getHrisUserAccountBasicInfo);
-//this is for payroll backend to hris-backend communication. 
-router.get('/:user_id/basic-info', authenticateAPIKey, userController.getHrisUserAccountBasicInfo);
-//for payroll frontnd to hris backend
-router.get('/user/me/basic-info', authenticateJWTToken, userController.getHrisUserAccountBasicInfoPayrollFrontend);
+//checking id
+router.get(
+  "/check-id/:user_id",
+  authenticateJWTToken,
+  userController.checkUserIdAvailability
+);
+
+//personal details UPDATE
+router.patch(
+  "/:user_id/personal-details",
+  authenticateJWTToken,
+  userController.updatePersonalDetails
+);
+
+//contact info UPDATEE
+router.patch(
+  "/:user_id/contact-info",
+  authenticateJWTToken,
+  userController.updateContactInfo
+);
+
+
+
+//govt remittances UPDATE
+router.patch(
+  "/:user_id/government-remittances",
+  authenticateJWTToken,
+  userController.updateGovernmentRemittances
+);
+
+//emergency contacts UPDATE
+router.patch(
+  "/:user_id/emergency-contacts",
+  authenticateJWTToken,
+  userController.updateEmergencyContacts
+);
+
+//addresses UPDATE
+router.patch(
+  "/:user_id/addresses",
+  authenticateJWTToken,
+  userController.updateAddresses
+);
+
+
+//hr201_url UPDATE
+router.patch(
+  "/:user_id/hr201url",
+  authenticateJWTToken,
+  userController.updateHr201url
+);
+
+//designation UPDATE
+
+router.patch(
+  "/:user_id/designation",
+  authenticateJWTToken,
+  userController.updateDesignation
+);
+
+//timeline update
+router.patch(
+  "/:user_id/employment-timeline",
+  authenticateJWTToken,
+  userController.updateEmploymentTimeline
+);
+
 
 
 // //employment-info
@@ -157,73 +213,5 @@ router.patch("/:user_id/hr201", hrisUserHr201Controller.update); //since its bee
 //attendances
 
 //overtimes
-
-
-
-//This needs to be rearanged - Allen's changes
-//checking id
-router.get(
-  "/check-id/:user_id",
-  authenticateJWTToken,
-  userController.checkUserIdAvailability
-);
-
-//personal details UPDATE
-router.patch(
-  "/:user_id/personal-details",
-  authenticateJWTToken,
-  userController.updatePersonalDetails
-);
-
-//contact info UPDATEE
-router.patch(
-  "/:user_id/contact-info",
-  authenticateJWTToken,
-  userController.updateContactInfo
-);
-
-//govt remittances UPDATE
-router.patch(
-  "/:user_id/government-remittances",
-  authenticateJWTToken,
-  userController.updateGovernmentRemittances
-);
-
-//emergency contacts UPDATE
-router.patch(
-  "/:user_id/emergency-contacts",
-  authenticateJWTToken,
-  userController.updateEmergencyContacts
-);
-
-//addresses UPDATE
-router.patch(
-  "/:user_id/addresses",
-  authenticateJWTToken,
-  userController.updateAddresses
-);
-
-
-//hr201_url UPDATE
-router.patch(
-  "/:user_id/hr201url",
-  authenticateJWTToken,
-  userController.updateHr201url
-);
-
-//designation UPDATE
-
-router.patch(
-  "/:user_id/designation",
-  authenticateJWTToken,
-  userController.updateDesignation
-);
-
-//timeline update
-router.patch(
-  "/:user_id/employment-timeline",
-  authenticateJWTToken,
-  userController.updateEmploymentTimeline
-);
 
 module.exports = router;

@@ -1,14 +1,14 @@
 const { Sequelize } = require("sequelize");
-const env = require("./env");
+require("dotenv").config();
 
 const sequelize = new Sequelize(
-    env.DB_NAME_DEV,
-    env.DB_USER,
-    env.DB_PASSWORD,
+    process.env.DB_NAME_DEV,
+    process.env.DB_USER,
+    process.env.DB_PASSWORD,
     {
-        host: env.DB_HOST,
+        host: process.env.DB_HOST,
         dialect: 'mysql',
-        port: env.DB_PORT,
+        port: process.env.DB_PORT,
         logging: console.log,
         pool: {
             max: 10,

@@ -32,46 +32,46 @@ const HrisUserAddress = sequelize.define(
     },
     barangayCode: {
       type: DataTypes.STRING(100),
-      allowNull: true,
+      allowNull: false,
     },
     city: {
       type: DataTypes.STRING(100),
-      allowNull: true,
+      allowNull: false,
     },
     cityCode: {
       type: DataTypes.STRING(100),
-      allowNull: true,
+      allowNull: false,
     },
     postal_code: {
       type: DataTypes.STRING(4),
-      allowNull: true,
+      allowNull: false,
     },
     province: {
       type: DataTypes.STRING(100),
-      allowNull: true,
+      allowNull: false,
     },
     provinceCode: {
       type: DataTypes.STRING(100),
-      allowNull: true,
+      allowNull: false,
     },
     region: {
       type: DataTypes.STRING(100),
-      allowNull: true,
+      allowNull: false,
     },
     regionCode: {
       type: DataTypes.STRING(100),
-      allowNull: true,
+      allowNull: false,
     },
     country: {
       type: DataTypes.STRING(100),
-      allowNull: true,
+      allowNull: false,
     },
     address_type: {
       type: DataTypes.ENUM(
         hrisUserAddressesAddressTypeEnum.CURRENT,
         hrisUserAddressesAddressTypeEnum.PERMANENT
       ),
-      allowNull: true,
+      allowNull: false,
     },
   },
   {
