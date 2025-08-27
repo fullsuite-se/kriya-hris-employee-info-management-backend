@@ -28,7 +28,7 @@ exports.login = async (req, res) => {
             accessPermissions,
         },
             env.JWT_SECRET,
-            { expiresIn: "10h" }
+            { expiresIn: "1h" }
         );
 
         return res.status(200).json({ message: "Login successfully", token: token });
