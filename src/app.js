@@ -1,45 +1,53 @@
 const express = require("express");
 const app = express();
-const path = require('path');
+const path = require("path");
 const cors = require("cors");
 const sequelize = require("./config/db");
 const routes = require("./routes");
 const env = require("./config/env");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use('/static', express.static(path.join(__dirname, "..", "public")));
+app.use("/static", express.static(path.join(__dirname, "..", "public")));
+
+// app.use(
+//   cors({
+//     origin: [
+//       env.VITE_FRONTEND_URL_DEVELOPMENT,
+//       env.VITE_FRONTEND_URL_PRODUCTION,
+//     ],
+//     credentials: false,
+//   })
+// );
 
 
+//for dev
 app.use(cors({
-    origin: [env.VITE_FRONTEND_URL_DEVELOPMENT, env.VITE_FRONTEND_URL_PRODUCTION],
-    credentials: false,
+    origin: [process.env.VITE_FRONTEND_URL_DEVELOPMENT, process.env.VITE_FRONTEND_URL_PRODUCTION],
+    credentials: true,
 }));
+
 
 //this is to run the db and sync the tables
 require("./models");
 
-app.use('/api', routes);
-
-
+app.use("/api", routes);
 
 (async () => {
-    try {
-        await sequelize.authenticate();
-        console.log('Connection has been established successfully.');
-        // await sequelize.sync({
-        //     force: true,
-        // });
-    } catch (error) {
-        console.error('Unable to connect to the database:', error);
-    }
-    finally {
-        console.log('Database Sync successfully');
-    }
+  try {
+    await sequelize.authenticate();
+    console.log("Connection has been established successfully.");
+    // await sequelize.sync({
+    //   force: true,
+    // });
+  } catch (error) {
+    console.error("Unable to connect to the database:", error);
+  } finally {
+    console.log("Database Sync successfully");
+  }
 })();
 
-
-app.get('/', (req, res) => {
-    return res.sendFile(path.join(__dirname, "..", "public", "index.html"));
+app.get("/", (req, res) => {
+  return res.sendFile(path.join(__dirname, "..", "public", "index.html"));
 });
 
-module.exports = app; 
+module.exports = app;
