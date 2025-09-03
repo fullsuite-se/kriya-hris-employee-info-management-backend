@@ -19,22 +19,6 @@ app.use('/api', routes);
 
 
 
-// (async () => {
-//     try {
-//         await sequelize.authenticate();
-//         console.log('Connection has been established successfully.');
-//         // await sequelize.sync({
-//         //     force: true,
-//         // });
-//     } catch (error) {
-//         console.error('Unable to connect to the database:', error);
-//     }
-//     finally {
-//         console.log('Database Sync successfully');
-//     }
-// })();
-
-
 app.get('/', (req, res) => {
     return res.sendFile(path.join(__dirname, "..", "public", "index.html"));
 });
