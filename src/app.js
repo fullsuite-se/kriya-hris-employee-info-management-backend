@@ -15,9 +15,6 @@ app.use(cors({
     credentials: false,
 }));
 
-//this is to run the db and sync the tables
-require("./models");
-
 app.use('/api', routes);
 
 
