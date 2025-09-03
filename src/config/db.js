@@ -34,7 +34,6 @@ const sequelize = new Sequelize(
         dialect: 'mysql',
         port: env.DB_PORT,
         logging: console.log,
-        pool: false,
     }
 );
 
