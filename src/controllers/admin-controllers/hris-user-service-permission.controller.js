@@ -1,4 +1,4 @@
-const { getUserServicePermission, addUserServicePermission, deleteUserServicePermission } = require("../../services/access-control/hris-user-service-permission.service");
+const { getUserServicePermission, addUserServicePermission, deleteUserServicePermission, getAllFeaturesByServiceId, getAllServicesAndFeatures } = require("../../services/access-control/hris-user-service-permission.service");
 
 exports.getAll = async (req, res) => {
     const { user_id } = req.params;
@@ -8,6 +8,34 @@ exports.getAll = async (req, res) => {
         return res.status(200).json({ message: "Fetched successfully", servicePermissions })
     } catch (error) {
         return res.status(500).json({ message: "Failed", error: error.message });
+    }
+}
+
+exports.getAllServicesAndFeatures = async (req, res) => {
+  try {
+    const { service: serviceId } = req.query;
+
+    const servicesAndFeatures = await getAllServicesAndFeatures(serviceId);
+
+    return res.status(200).json({
+      message: "Fetched services and their features successfully",
+      servicesAndFeatures,
+    });
+  } catch (error) {
+    console.error("Error fetching services and features:", error);
+    return res.status(500).json({ message: "Failed", error: error.message });
+  }
+};
+
+exports.getAllFeatures = async (req,res)=>{
+    const {service_id}= req.params;
+
+    try {
+         const serviceFeatures = await getAllFeaturesByServiceId(service_id);
+        return res.status(200).json({ message: "Fetched service features successfully", serviceFeatures })
+    } catch (error) {
+        return res.status(500).json({ message: "Failed", error: error.message });
+    
     }
 }
 
