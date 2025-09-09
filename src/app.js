@@ -7,12 +7,12 @@ const routes = require("./routes");
 const env = require("./config/env");
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use('/static', express.static(path.join(__dirname, "..", "public")));
+app.use('/static', express.static(path.join(__dirname, "public")));
 
 
 app.use(cors({
     origin: [env.VITE_FRONTEND_URL_DEVELOPMENT, env.VITE_FRONTEND_URL_PRODUCTION],
-    credentials: false,
+    credentials: true, //false
 }));
 
 app.use('/api', routes);

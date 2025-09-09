@@ -2,11 +2,10 @@ const {
   prepareNewHrisUserAccountData,
 } = require("../services/user-data-preprocessing.service");
 const {
-  findAllHrisUserAccount,
+  // findAllHrisUserAccount,
   findHrisUserAccount,
-  findAllHrisUserAccountViaSearcyQuery,
+  // findAllHrisUserAccountViaSearcyQuery,
   createHrisUserAccount,
-  
   updatePersonalDetails,
   isUserIdTaken,
   updateContactInfo,
@@ -16,42 +15,63 @@ const {
   updateHr201url,
   updateDesignation,
   updateEmploymentTimeline,
-  findAllHrisUserAccountViaFilter,
+  // findAllHrisUserAccountViaFilter,
+    getLatestId,
   
   findAllHrisUserAccountViaServiceFeatureAccess,
   findHrisUserAccountBasicInfo,
-  findAllHrisUserAccountViaServiceAccess
+  findAllHrisUserAccountViaServiceAccess,
+  findAllHrisUserAccounts,
 } = require("../services/user.service");
 const bcryptjs = require("bcryptjs");
 
-
 exports.getHrisUserAccounts = async (req, res) => {
-    const { query } = req.query;
-    const { service_feature_id } = req.query;
-    const { service_id } = req.query;
+  try {
+    const { include, ...filters } = req.query;
+    const { service_feature_id, service_id } = req.query;
 
-    try {
-        if (query) {
-            const hrisUserAccounts = await findAllHrisUserAccountViaSearcyQuery(query);
-            return res.status(200).json({ message: "Users retrieved successfully", users: hrisUserAccounts })
-        }
+    if (service_feature_id) {
+      const hrisUserAccounts =
+        await findAllHrisUserAccountViaServiceFeatureAccess(service_feature_id);
 
-        if (service_feature_id) {
-            const hrisUserAccounts = await findAllHrisUserAccountViaServiceFeatureAccess(service_feature_id);
-            return res.status(200).json({ message: "Users retrieved successfully", users: hrisUserAccounts })
-        }
-
-        if (service_id) {
-            const hrisUserAccounts = await findAllHrisUserAccountViaServiceAccess(service_id);
-            return res.status(200).json({ message: "Users retrieved successfully", users: hrisUserAccounts })
-        }
-
-        const hrisUserAccounts = await findAllHrisUserAccount();
-        res.status(200).json({ message: "Users retrieved successfully", users: hrisUserAccounts })
-    } catch (error) {
-        res.status(500).json({ message: "Failed to fetch hris user acccounts", error: error.message })
+      return res.status(200).json({
+        message: "Users retrieved successfully",
+        users: hrisUserAccounts,
+        length: hrisUserAccounts.length,
+      });
     }
-}
+
+    if (service_id) {
+      const hrisUserAccounts =
+        await findAllHrisUserAccountViaServiceAccess(service_id);
+
+      return res.status(200).json({
+        message: "Users retrieved successfully",
+        users: hrisUserAccounts,
+        length: hrisUserAccounts.length,
+      });
+    }
+
+    const hrisUserAccounts = await findAllHrisUserAccounts({
+      include,
+      filters,
+    });
+
+    return res.status(200).json({
+      message: "Users retrieved successfully",
+      users: hrisUserAccounts,
+      length: hrisUserAccounts.length,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to fetch hris user accounts",
+      error: error.message,
+    });
+  }
+};
+
+
+
 
 exports.getHrisUserAccountBasicInfo = async (req, res) => {
     const { user_id } = req.params;
@@ -408,6 +428,20 @@ exports.checkUserIdAvailability = async (req, res) => {
   }
 };
 
+exports.getLatestId = async (req, res) => {
+  try {
+    const latestId = await getLatestId();
+    res.status(200).json({
+      message: "Latest ID fetched successfully.",
+      latestId,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to check user ID availability",
+      error: error.message,
+    });
+  }
+};
 exports.updatePersonalDetails = async (req, res) => {
   const { user_id } = req.params;
   const { system_user_id } = req.user;
