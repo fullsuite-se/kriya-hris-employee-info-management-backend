@@ -11,6 +11,7 @@ function buildUserFilters(filters) {
     salaryMax,
     q,
     supervisor,
+    job_position,
   } = filters;
 
   const whereAccount = {};
@@ -60,11 +61,16 @@ function buildUserFilters(filters) {
       whereDesignation.upline_id = { [Op.in]: list };
     }
   }
-
-  if (jobTitleId) {
-    const list = jobTitleId.split(",").map((id) => Number(id));
-    whereDesignation.company_job_title_id = { [Op.in]: list };
+  if (job_position) {
+    const list = job_position
+      .split(",")
+      .map((d) => d.trim())
+      .filter(Boolean);
+    if (list.length) {
+      whereDesignation.job_title_id = { [Op.in]: list };
+    }
   }
+
 
   if (q) {
     const like = { [Op.like]: `%${q}%` };

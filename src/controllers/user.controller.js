@@ -2,7 +2,7 @@ const {
   prepareNewHrisUserAccountData,
 } = require("../services/user-data-preprocessing.service");
 const {
-  findAllHrisUserAccount,
+  // findAllHrisUserAccount,
   findHrisUserAccount,
   createHrisUserAccount,
   updatePersonalDetails,
@@ -14,7 +14,9 @@ const {
   updateHr201url,
   updateDesignation,
   updateEmploymentTimeline,
-  findAllHrisUserAccountViaFilter,
+  // findAllHrisUserAccountViaFilter,
+  getLatestId,
+  findAllHrisUserAccounts,
 } = require("../services/user.service");
 const bcryptjs = require("bcryptjs");
 
@@ -48,11 +50,12 @@ const bcryptjs = require("bcryptjs");
 
 exports.getHrisUserAccounts = async (req, res) => {
   try {
-    const filters = req.query;
+    const { include, ...filters } = req.query;
 
-    const hrisUserAccounts = Object.keys(filters).length
-      ? await findAllHrisUserAccountViaFilter(filters)
-      : await findAllHrisUserAccount();
+    const hrisUserAccounts = await findAllHrisUserAccounts({
+      include,
+      filters,
+    });
 
     return res.status(200).json({
       message: "Users retrieved successfully",
@@ -66,6 +69,7 @@ exports.getHrisUserAccounts = async (req, res) => {
     });
   }
 };
+
 
 exports.getHrisUserAccount = async (req, res) => {
   const { user_id } = req.params;
@@ -399,6 +403,20 @@ exports.checkUserIdAvailability = async (req, res) => {
   }
 };
 
+exports.getLatestId = async (req, res) => {
+  try {
+    const latestId = await getLatestId();
+    res.status(200).json({
+      message: "Latest ID fetched successfully.",
+      latestId,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to check user ID availability",
+      error: error.message,
+    });
+  }
+};
 exports.updatePersonalDetails = async (req, res) => {
   const { user_id } = req.params;
   const { system_user_id } = req.user;

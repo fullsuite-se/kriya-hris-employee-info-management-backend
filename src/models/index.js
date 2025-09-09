@@ -175,6 +175,34 @@ HrisUserServicePermission.belongsTo(Service, { foreignKey: 'service_id' });
 HrisUserAccount.hasMany(HrisUserServicePermission, { foreignKey: 'user_id' });
 HrisUserServicePermission.belongsTo(HrisUserAccount, { foreignKey: 'user_id' });
 
+
+
+// HrisUserAccount ↔ Service through HrisUserServicePermission
+HrisUserAccount.belongsToMany(Service, {
+  through: HrisUserServicePermission,
+  foreignKey: "user_id",
+  otherKey: "service_id",
+});
+
+Service.belongsToMany(HrisUserAccount, {
+  through: HrisUserServicePermission,
+  foreignKey: "service_id",
+  otherKey: "user_id",
+});
+// HrisUserAccount - ServiceFeature through HrisUserAccessPermission
+HrisUserAccount.belongsToMany(ServiceFeature, {
+  through: HrisUserAccessPermission,
+  foreignKey: "user_id",
+  otherKey: "service_feature_id",
+});
+
+ServiceFeature.belongsToMany(HrisUserAccount, {
+  through: HrisUserAccessPermission,
+  foreignKey: "service_feature_id",
+  otherKey: "user_id",
+});
+
+
 //export
 module.exports = {
     CompanyAddress,

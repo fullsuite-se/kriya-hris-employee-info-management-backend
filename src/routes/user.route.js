@@ -33,6 +33,12 @@ router.get(
   authenticateJWTToken,
   userController.checkUserIdAvailability
 );
+//getting latest id
+router.get(
+  "/latest-id/get",
+  authenticateJWTToken,
+  userController.getLatestId
+);
 
 //personal details UPDATE
 router.patch(
