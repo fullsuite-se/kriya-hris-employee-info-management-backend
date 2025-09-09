@@ -12,7 +12,7 @@ app.use('/static', express.static(path.join(__dirname, "..", "public")));
 
 app.use(cors({
     origin: [env.VITE_FRONTEND_URL_DEVELOPMENT, env.VITE_FRONTEND_URL_PRODUCTION],
-    credentials: true, //false
+    credentials: true,
 }));
 
 app.use('/api', routes);
