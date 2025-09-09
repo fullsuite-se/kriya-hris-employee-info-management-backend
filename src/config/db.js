@@ -2,7 +2,7 @@ const { Sequelize } = require("sequelize");
 const env = require("./env");
 
 const sequelize = new Sequelize(
-    env.DB_NAME_DEV,
+  env.DB_NAME_DEV,
     env.DB_USER,
     env.DB_PASSWORD,
     {
@@ -20,5 +20,6 @@ const sequelize = new Sequelize(
         },
     }
 );
+
 
 module.exports = sequelize;
