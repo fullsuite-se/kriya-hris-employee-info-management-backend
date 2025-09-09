@@ -6,10 +6,18 @@ const sequelize = new Sequelize(
     env.DB_USER,
     env.DB_PASSWORD,
     {
-        host: env.DB_HOST,
-        dialect: 'mysql2',
-        port: env.DB_PORT,
-        logging: console.log,
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT || 3306,
+        dialect: "mysql",
+        dialectModule: require("mysql2"),
+        logging: false,
+
+        pool: {
+            max: 5,
+            min: 0,
+            acquire: 30000,
+            idle: 10000,
+        },
     }
 );
 
