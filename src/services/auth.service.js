@@ -17,7 +17,7 @@ exports.checkServiceAccess = (service, servicePermissions) => {
     const servicePermissionsStringArray = servicePermissions.map(s => s.service_name);
 
     if (!servicePermissionsStringArray.includes(service)) {
-        throw new Error("Not allowed to access service");
+        throw new Error("Unauthorized to access service");
     }
 
 }
