@@ -11,7 +11,7 @@ app.use('/static', express.static(path.join(__dirname, "..", "public")));
 
 
 app.use(cors({
-    origin: [env.VITE_FRONTEND_URL_DEVELOPMENT, env.VITE_FRONTEND_URL_PRODUCTION],
+    origin: [env.VITE_FRONTEND_URL_DEVELOPMENT, env.VITE_FRONTEND_URL_PRODUCTION, env.VITE_FRONTEND_PAYROLL_URL_DEVELOPMENT, env.VITE_FRONTEND_PAYROLL_URL_PRODUCTION],
     credentials: true,
 }));
 
