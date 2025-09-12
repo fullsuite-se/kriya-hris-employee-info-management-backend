@@ -20,3 +20,7 @@ This is the backend component of the  employee management system componenet of t
     - The **user_email** is renamed as **system_user_email** for distinction
     - The **company_id** is renamed as **system_company_id** for distinction
 2) Every request contains a token containing the info about the client
+
+
+### Deployments
+1) Create a deployment branch for backend that payroll connects to. 
