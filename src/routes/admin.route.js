@@ -7,21 +7,25 @@ const { authenticateJWTToken } = require("../middleware/auth.middleware");
 //base url: /api/admin
 
 //managing user's service access: hris-user-service-permission
-router.get('/service/hris-user-accounts/:user_id', hrisUserServicePermissionController.getAll);
-router.post('/service/hris-user-accounts/:user_id', hrisUserServicePermissionController.create);
-router.delete('/service/hris-user-accounts/:user_id', hrisUserServicePermissionController.delete);
+router.get('/service/hris-user-accounts/:user_id', authenticateJWTToken, hrisUserServicePermissionController.getAll);
+router.post('/service/hris-user-accounts/:user_id', authenticateJWTToken, hrisUserServicePermissionController.create);
+router.delete('/service/hris-user-accounts/:user_id', authenticateJWTToken, hrisUserServicePermissionController.delete);
 
 //managing user's feature access: hris-user-access-permission
-router.get('/features/hris-user-accounts/:user_id', hrisUserAccessPermissionController.getAll);
-router.post('/features/hris-user-accounts/:user_id', hrisUserAccessPermissionController.create);
-router.delete('/features/hris-user-accounts/:user_id', hrisUserAccessPermissionController.delete);
+router.get('/features/hris-user-accounts/:user_id', authenticateJWTToken, hrisUserAccessPermissionController.getAll);
+router.post('/features/hris-user-accounts/:user_id', authenticateJWTToken, hrisUserAccessPermissionController.create);
+router.delete('/features/hris-user-accounts/:user_id', authenticateJWTToken, hrisUserAccessPermissionController.delete);
 
 
 //fetch all services and its features
-router.get('/services-and-features', authenticateJWTToken, hrisUserServicePermissionController.getAllServicesAndFeatures );
+router.get('/services-and-features', authenticateJWTToken, hrisUserServicePermissionController.getAllServicesAndFeatures);
 
 
 //fetch all features of a service
-router.get('/features/:service_id', authenticateJWTToken, hrisUserServicePermissionController.getAllFeatures );
+router.get('/features/:service_id', authenticateJWTToken, hrisUserServicePermissionController.getAllFeatures);
+
+
+//w permissions
+router.get("/users-with-permissions", authenticateJWTToken, hrisUserServicePermissionController.getUsersWithPermissions); 
 
 module.exports = router;

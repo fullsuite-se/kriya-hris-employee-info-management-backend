@@ -1,130 +1,634 @@
 const { Op } = require("sequelize");
-const { HrisUserAccount, HrisUserInfo, HrisUserAddress, HrisUserEmergencyContact, HrisUserEmploymentInfo, HrisUserDesignation, HrisUserSalary, Company, CompanyAddress, CompanyDepartment, CompanyDivision, CompanyInfo, CompanyJobTitle, CompanyIndustry, HrisUserSalaryAdjustmentType, HrisUserJobLevel, HrisUserEmploymentStatus, HrisUserEmploymentType, HrisUserHr201, CompanyOffice, CompanyTeam, HrisUserGovernmentId, HrisUserGovernmentIdType, HrisUserShiftsTemplate, HrisUserAccessPermission, HrisUserServicePermission , Service, ServiceFeature,} = require("../models");
+const { HrisUserAccount, HrisUserInfo, HrisUserAddress, HrisUserEmergencyContact, HrisUserEmploymentInfo, HrisUserDesignation, HrisUserSalary, Company, CompanyAddress, CompanyDepartment, CompanyDivision, CompanyInfo, CompanyJobTitle, CompanyIndustry, HrisUserSalaryAdjustmentType, HrisUserJobLevel, HrisUserEmploymentStatus, HrisUserEmploymentType, HrisUserHr201, CompanyOffice, CompanyTeam, HrisUserGovernmentId, HrisUserGovernmentIdType, HrisUserShiftsTemplate, HrisUserAccessPermission, HrisUserServicePermission, Service, ServiceFeature, } = require("../models");
 const sequelize = require("../config/db");
 const { generateUUIV4 } = require("../utils/ids");
 const { buildUserFilters } = require("../utils/filter-builder");
 
-// exports.findAllHrisUserAccounts = async () => {
-//   return await HrisUserAccount.findAll({
+
+// service
+
+// exports.findAllHrisUserAccounts = async ({
+//   search,
+//   filters = {},
+//   page = 1,
+//   limit = 10,
+// } = {}) => {
+//   const offset = (page - 1) * limit;
+
+//   const {
+//     whereAccount,
+//     whereEmploymentInfo,
+//     whereDesignation,
+//     whereInfo,
+//   } = buildUserFilters(filters);
+
+//   // Build the base query options
+//   const queryOptions = {
+//     attributes: ["user_id", "user_email"],
 //     include: [
 //       {
 //         model: HrisUserInfo,
-//       },
-//       {
-//         model: HrisUserAddress,
-//       },
-//       {
-//         model: HrisUserEmergencyContact,
-//       },
-//       {
-//         model: HrisUserHr201,
-//       },
-//       {
-//         model: HrisUserSalary,
-//         include: HrisUserSalaryAdjustmentType,
+//         attributes: [
+//           "first_name",
+//           "middle_name",
+//           "last_name",
+//           "extension_name",
+//         ],
+//         where: Object.keys(whereInfo).length ? whereInfo : {},
+//         required: !!Object.keys(whereInfo).length,
 //       },
 //       {
 //         model: HrisUserEmploymentInfo,
+//         attributes: ["date_hired", "date_regularization"],
 //         include: [
 //           {
-//             model: HrisUserJobLevel,
-//           },
-//           {
 //             model: HrisUserEmploymentStatus,
-//           },
-//           {
-//             model: HrisUserEmploymentType,
-//           },
-//           {
-//             model: HrisUserShiftsTemplate,
+//             attributes: ["employment_status"],
 //           },
 //         ],
-//       },
-//       {
-//         model: HrisUserGovernmentId,
-//         include: HrisUserGovernmentIdType,
+//         where: Object.keys(whereEmploymentInfo).length
+//           ? whereEmploymentInfo
+//           : {},
+//         required: !!Object.keys(whereEmploymentInfo).length,
 //       },
 //       {
 //         model: HrisUserDesignation,
+//         attributes: ["upline_id"],
 //         include: [
-//           {
-//             model: Company,
-//             include: [
-//               {
-//                 model: CompanyAddress,
-//               },
-
-//               {
-//                 model: CompanyInfo,
-//                 include: CompanyIndustry,
-//               },
-//             ],
-//           },
-//           {
-//             model: CompanyJobTitle,
-//           },
-//           {
-//             model: CompanyDepartment,
-//           },
-//           {
-//             model: CompanyDivision,
-//           },
-//           {
-//             model: HrisUserAccount,
-//             as: "upline",
-//             include: [{ model: HrisUserInfo }],
-//           },
-//           {
-//             model: CompanyOffice,
-//           },
-//           {
-//             model: CompanyTeam,
-//           },
+//           { model: CompanyJobTitle, attributes: ["job_title"] },
+//           { model: CompanyDepartment, attributes: ["department_name"] },
 //         ],
+//         where: Object.keys(whereDesignation).length ? whereDesignation : {},
+//         required: !!Object.keys(whereDesignation).length,
 //       },
 //     ],
-//   });
+//     where: Object.keys(whereAccount).length ? whereAccount : {},
+//     limit,
+//     offset,
+//     distinct: true,
+//     subQuery: false,
+//     order: [
+//       [HrisUserInfo, 'last_name', 'ASC'],
+//       [HrisUserInfo, 'first_name', 'ASC'],
+//       [HrisUserInfo, 'middle_name', 'ASC']
+//     ],
+//   };
+
+//   // Add search functionality
+//   if (search && search.trim() !== "") {
+//     const searchTerm = `%${search}%`;
+//     const searchWords = search.trim().split(/\s+/).filter(word => word.length > 0);
+//     const searchWordCount = searchWords.length;
+
+//     // Create search conditions for the main table
+//     const accountSearchConditions = {
+//       [Op.or]: [
+//         { user_id: { [Op.like]: searchTerm } },
+//         { user_email: { [Op.like]: searchTerm } }
+//       ]
+//     };
+
+//     // Prepare replacements object
+//     const replacements = { searchTerm: searchTerm };
+
+//     // Build the complex search conditions for names
+//     let nameSearchConditions = `
+//       -- Individual field searches
+//       hris_user_infos.first_name LIKE :searchTerm OR
+//       hris_user_infos.middle_name LIKE :searchTerm OR
+//       hris_user_infos.last_name LIKE :searchTerm OR
+//       hris_user_infos.extension_name LIKE :searchTerm OR
+      
+//       -- Combined name searches
+//       CONCAT(hris_user_infos.first_name, ' ', hris_user_infos.last_name) LIKE :searchTerm OR
+//       CONCAT(hris_user_infos.last_name, ', ', hris_user_infos.first_name) LIKE :searchTerm OR
+//       CONCAT(hris_user_infos.first_name, ' ', COALESCE(hris_user_infos.middle_name, ''), ' ', hris_user_infos.last_name) LIKE :searchTerm OR
+//       CONCAT(hris_user_infos.last_name, ', ', hris_user_infos.first_name, ' ', COALESCE(hris_user_infos.middle_name, '')) LIKE :searchTerm OR
+      
+//       -- Reverse order searches
+//       CONCAT(hris_user_infos.last_name, ' ', hris_user_infos.first_name) LIKE :searchTerm
+//     `;
+
+//     // Handle multi-word searches for complex name patterns
+//     if (searchWordCount > 1) {
+//       // Add conditions for first name containing multiple words
+//       nameSearchConditions += `
+//         OR (
+//           -- Match when search terms are all in first name (e.g., "Mae Ann" in first_name)
+//           hris_user_infos.first_name LIKE :searchTerm
+//         )
+//         OR (
+//           -- Match when some words are in first name and some in last name
+//           hris_user_infos.first_name LIKE :firstWords AND
+//           hris_user_infos.last_name LIKE :lastWord
+//         )
+//         OR (
+//           -- Match when some words are in last name and some in first name  
+//           hris_user_infos.last_name LIKE :firstWords AND
+//           hris_user_infos.first_name LIKE :lastWord
+//         )
+//       `;
+
+//       // Add replacements for multi-word patterns
+//       const firstWords = searchWords.slice(0, -1).join(' ');
+//       const lastWord = searchWords[searchWordCount - 1];
+
+//       replacements.firstWords = `%${firstWords}%`;
+//       replacements.lastWord = `%${lastWord}%`;
+
+//       // Handle three or more word searches for middle name inclusion
+//       if (searchWordCount > 2) {
+//         nameSearchConditions += `
+//           OR (
+//             -- Match pattern: first_name middle_name last_name (e.g., "Mae Ann Santos")
+//             hris_user_infos.first_name LIKE :firstWord AND
+//             hris_user_infos.middle_name LIKE :middleWords AND
+//             hris_user_infos.last_name LIKE :lastWord
+//           )
+//           OR (
+//             -- Match pattern: first_name last_name with multi-word first name (e.g., "Mae Ann" in first_name + "Santos" in last_name)
+//             hris_user_infos.first_name LIKE :multiWordFirst AND
+//             hris_user_infos.last_name LIKE :lastWord
+//           )
+//         `;
+
+//         const firstWord = searchWords[0];
+//         const middleWords = searchWords.slice(1, -1).join(' ');
+//         const multiWordFirst = searchWords.slice(0, -1).join(' ');
+
+//         replacements.firstWord = `%${firstWord}%`;
+//         replacements.middleWords = `%${middleWords}%`;
+//         replacements.multiWordFirst = `%${multiWordFirst}%`;
+//       }
+
+//       // Add flexible word-by-word matching
+//       nameSearchConditions += `
+//         OR (
+//           -- Flexible matching: any combination of words across fields
+//           (hris_user_infos.first_name LIKE :word1 AND hris_user_infos.last_name LIKE :word2)
+//           OR (hris_user_infos.last_name LIKE :word1 AND hris_user_infos.first_name LIKE :word2)
+//       `;
+
+//       // Add individual word replacements
+//       searchWords.forEach((word, index) => {
+//         replacements[`word${index + 1}`] = `%${word}%`;
+//       });
+
+//       // Add middle name to flexible matching for 3+ words
+//       if (searchWordCount > 2) {
+//         nameSearchConditions += `
+//           OR (hris_user_infos.first_name LIKE :word1 AND hris_user_infos.middle_name LIKE :word2 AND hris_user_infos.last_name LIKE :word3)
+//           OR (hris_user_infos.first_name LIKE :word1 AND hris_user_infos.last_name LIKE :word2 AND hris_user_infos.middle_name LIKE :word3)
+//         `;
+//       }
+
+//       nameSearchConditions += `)`;
+//     }
+
+//     // Apply search conditions to the main query
+//     queryOptions.where = {
+//       ...queryOptions.where,
+//       [Op.or]: [
+//         accountSearchConditions,
+//         sequelize.literal(`EXISTS (
+//           SELECT 1 FROM hris_user_infos 
+//           WHERE hris_user_infos.user_id = HrisUserAccount.user_id 
+//           AND (${nameSearchConditions})
+//         )`)
+//       ]
+//     };
+
+//     // Add replacements for the literal query
+//     queryOptions.replacements = replacements;
+
+//     // Make sure HrisUserInfo is required when searching by user info fields
+//     const infoIncludeIndex = queryOptions.include.findIndex(
+//       include => include.model === HrisUserInfo
+//     );
+
+//     if (infoIncludeIndex !== -1) {
+//       queryOptions.include[infoIncludeIndex].required = true;
+//     }
+//   }
+
+//   return await HrisUserAccount.findAndCountAll(queryOptions);
 // };
 
+//2
 
-exports.findAllHrisUserAccounts = async ({ include, filters = {} } = {}) => {
+exports.findAllHrisUserAccounts = async ({
+  search,
+  filters = {},
+  page = 1,
+  limit = 10,
+} = {}) => {
+  const offset = (page - 1) * limit;
+
   const {
     whereAccount,
     whereEmploymentInfo,
-    whereSalary,
     whereDesignation,
     whereInfo,
   } = buildUserFilters(filters);
 
+  // Base query
   const queryOptions = {
-    where: Object.keys(whereAccount).length ? whereAccount : undefined,
+    attributes: ["user_id", "user_email"],
     include: [
       {
         model: HrisUserInfo,
-        where: Object.keys(whereInfo).length ? whereInfo : undefined,
+        attributes: [
+          "first_name",
+          "middle_name",
+          "last_name",
+          "extension_name",
+        ],
+        where: Object.keys(whereInfo).length ? whereInfo : {},
         required: !!Object.keys(whereInfo).length,
       },
-      { model: HrisUserAddress },
-      { model: HrisUserEmergencyContact },
-      { model: HrisUserHr201 },
+      {
+        model: HrisUserEmploymentInfo,
+        attributes: ["date_hired", "date_regularization"],
+        include: [
+          {
+            model: HrisUserEmploymentStatus,
+            attributes: ["employment_status"],
+          },
+        ],
+        where: Object.keys(whereEmploymentInfo).length
+          ? whereEmploymentInfo
+          : {},
+        required: !!Object.keys(whereEmploymentInfo).length,
+      },
+      {
+        model: HrisUserDesignation,
+        attributes: ["upline_id"],
+        include: [
+          { model: CompanyJobTitle, attributes: ["job_title"] },
+          { model: CompanyDepartment, attributes: ["department_name"] },
+        ],
+        where: Object.keys(whereDesignation).length ? whereDesignation : {},
+        required: !!Object.keys(whereDesignation).length,
+      },
+    ],
+    where: Object.keys(whereAccount).length ? whereAccount : {},
+    limit,
+    offset,
+    distinct: true,
+    subQuery: false,
+    order: [
+      [HrisUserInfo, "last_name", "ASC"],
+      [HrisUserInfo, "first_name", "ASC"],
+      [HrisUserInfo, "middle_name", "ASC"],
+    ],
+  };
+
+  // 🔎 Search logic (keep exactly as in your working code)
+  if (search && search.trim() !== "") {
+    const searchTerm = `%${search}%`;
+    const searchWords = search.trim().split(/\s+/).filter((word) => word.length > 0);
+    const searchWordCount = searchWords.length;
+
+    const accountSearchConditions = {
+      [Op.or]: [
+        { user_id: { [Op.like]: searchTerm } },
+        { user_email: { [Op.like]: searchTerm } },
+      ],
+    };
+
+    const replacements = { searchTerm };
+
+    let nameSearchConditions = `
+      hris_user_infos.first_name LIKE :searchTerm OR
+      hris_user_infos.middle_name LIKE :searchTerm OR
+      hris_user_infos.last_name LIKE :searchTerm OR
+      hris_user_infos.extension_name LIKE :searchTerm OR
+      CONCAT(hris_user_infos.first_name, ' ', hris_user_infos.last_name) LIKE :searchTerm OR
+      CONCAT(hris_user_infos.last_name, ', ', hris_user_infos.first_name) LIKE :searchTerm OR
+      CONCAT(hris_user_infos.first_name, ' ', COALESCE(hris_user_infos.middle_name, ''), ' ', hris_user_infos.last_name) LIKE :searchTerm OR
+      CONCAT(hris_user_infos.last_name, ', ', hris_user_infos.first_name, ' ', COALESCE(hris_user_infos.middle_name, '')) LIKE :searchTerm OR
+      CONCAT(hris_user_infos.last_name, ' ', hris_user_infos.first_name) LIKE :searchTerm
+    `;
+
+    if (searchWordCount > 1) {
+      nameSearchConditions += `
+        OR (
+          hris_user_infos.first_name LIKE :searchTerm
+        )
+        OR (
+          hris_user_infos.first_name LIKE :firstWords AND
+          hris_user_infos.last_name LIKE :lastWord
+        )
+        OR (
+          hris_user_infos.last_name LIKE :firstWords AND
+          hris_user_infos.first_name LIKE :lastWord
+        )
+      `;
+
+      const firstWords = searchWords.slice(0, -1).join(" ");
+      const lastWord = searchWords[searchWordCount - 1];
+
+      replacements.firstWords = `%${firstWords}%`;
+      replacements.lastWord = `%${lastWord}%`;
+
+      if (searchWordCount > 2) {
+        nameSearchConditions += `
+          OR (
+            hris_user_infos.first_name LIKE :firstWord AND
+            hris_user_infos.middle_name LIKE :middleWords AND
+            hris_user_infos.last_name LIKE :lastWord
+          )
+          OR (
+            hris_user_infos.first_name LIKE :multiWordFirst AND
+            hris_user_infos.last_name LIKE :lastWord
+          )
+        `;
+
+        const firstWord = searchWords[0];
+        const middleWords = searchWords.slice(1, -1).join(" ");
+        const multiWordFirst = searchWords.slice(0, -1).join(" ");
+
+        replacements.firstWord = `%${firstWord}%`;
+        replacements.middleWords = `%${middleWords}%`;
+        replacements.multiWordFirst = `%${multiWordFirst}%`;
+      }
+
+      nameSearchConditions += `
+        OR (
+          (hris_user_infos.first_name LIKE :word1 AND hris_user_infos.last_name LIKE :word2)
+          OR (hris_user_infos.last_name LIKE :word1 AND hris_user_infos.first_name LIKE :word2)
+      `;
+
+      searchWords.forEach((word, index) => {
+        replacements[`word${index + 1}`] = `%${word}%`;
+      });
+
+      if (searchWordCount > 2) {
+        nameSearchConditions += `
+          OR (hris_user_infos.first_name LIKE :word1 AND hris_user_infos.middle_name LIKE :word2 AND hris_user_infos.last_name LIKE :word3)
+          OR (hris_user_infos.first_name LIKE :word1 AND hris_user_infos.last_name LIKE :word2 AND hris_user_infos.middle_name LIKE :word3)
+        `;
+      }
+
+      nameSearchConditions += `)`;
+    }
+
+    queryOptions.where = {
+      ...queryOptions.where,
+      [Op.or]: [
+        accountSearchConditions,
+        sequelize.literal(`EXISTS (
+          SELECT 1 FROM hris_user_infos 
+          WHERE hris_user_infos.user_id = HrisUserAccount.user_id 
+          AND (${nameSearchConditions})
+        )`),
+      ],
+    };
+
+    queryOptions.replacements = replacements;
+
+    const infoIncludeIndex = queryOptions.include.findIndex(
+      (include) => include.model === HrisUserInfo
+    );
+    if (infoIncludeIndex !== -1) {
+      queryOptions.include[infoIncludeIndex].required = true;
+    }
+  }
+
+  // 📌 Fetch users
+  const result = await HrisUserAccount.findAndCountAll(queryOptions);
+
+  // 📌 Attach haveAccess flag
+  const userIds = result.rows.map((user) => user.user_id);
+
+  const permissions = await HrisUserServicePermission.findAll({
+    attributes: ["user_id"],
+    where: { user_id: userIds },
+    group: ["user_id"],
+    raw: true,
+  });
+
+  const usersWithAccess = new Set(permissions.map((p) => p.user_id));
+
+  const rowsWithAccessFlag = result.rows.map((user) => ({
+    ...user.get({ plain: true }),
+    haveAccess: usersWithAccess.has(user.user_id),
+  }));
+
+  return {
+    count: result.count,
+    rows: rowsWithAccessFlag,
+  };
+};
+
+
+
+//get emp count
+// service
+exports.getEmployeeCounts = async () => {
+  const phNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" }));
+
+  const startOfMonth = new Date(phNow.getFullYear(), phNow.getMonth(), 1);
+  const startOfNextMonth = new Date(phNow.getFullYear(), phNow.getMonth() + 1, 1);
+
+  // Get all employment statuses
+  const allStatuses = await HrisUserEmploymentStatus.findAll({
+    attributes: ["employment_status_id", "employment_status"],
+    raw: true,
+  });
+
+  const [
+    countsByStatusRaw,
+    activeCountResult,
+    newHiresByStatusRaw,
+    newSeparatedByStatusRaw,
+    newRegularsRaw,
+  ] = await Promise.all([
+    // Counts by status (all employees)
+    HrisUserEmploymentInfo.findAll({
+      attributes: [
+        "employment_status_id",
+        [sequelize.fn("COUNT", sequelize.col("*")), "count"],
+      ],
+      include: [{ model: HrisUserEmploymentStatus, attributes: [], required: true }],
+      group: ["employment_status_id"],
+      raw: true,
+    }),
+
+    // Active count (not offboarded or separated)
+    HrisUserEmploymentInfo.count({
+      where: { date_offboarding: null, date_separated: null },
+    }),
+
+    // New hires by status this month
+    HrisUserEmploymentInfo.findAll({
+      attributes: [
+        "employment_status_id",
+        [sequelize.fn("COUNT", sequelize.col("*")), "newHiresThisMonth"],
+      ],
+      include: [{ model: HrisUserEmploymentStatus, attributes: [], required: true }],
+      where: {
+        date_hired: {
+          [Op.gte]: startOfMonth,
+          [Op.lt]: startOfNextMonth,
+        },
+      },
+      group: ["employment_status_id"],
+      raw: true,
+    }),
+
+    // New separations by status this month
+    HrisUserEmploymentInfo.findAll({
+      attributes: [
+        "employment_status_id",
+        [sequelize.fn("COUNT", sequelize.col("*")), "newSeparatedThisMonth"],
+      ],
+      include: [{ model: HrisUserEmploymentStatus, attributes: [], required: true }],
+      where: {
+        date_separated: {
+          [Op.gte]: startOfMonth,
+          [Op.lt]: startOfNextMonth,
+        },
+      },
+      group: ["employment_status_id"],
+      raw: true,
+    }),
+
+    // Regularizations this month
+    HrisUserEmploymentInfo.findAll({
+      attributes: [
+        "employment_status_id",
+        [sequelize.fn("COUNT", sequelize.col("*")), "newRegularThisMonth"],
+      ],
+      include: [
+        { model: HrisUserEmploymentStatus, attributes: [], required: true },
+      ],
+      where: {
+        date_regularization: {
+          [Op.gte]: startOfMonth,
+          [Op.lt]: startOfNextMonth,
+        },
+      },
+      group: ["employment_status_id"],
+      raw: true,
+    }),
+  ]);
+
+  // Merge counts into statuses
+  const mergeCountsWithStatuses = (
+    allCountsData,
+    newHiresData,
+    newSeparatedData,
+    newRegularsData,
+    allStatuses
+  ) => {
+    const allCounts = allCountsData.map((item) => ({
+      employment_status_id: item.employment_status_id,
+      count: parseInt(item.count),
+    }));
+
+    const newHiresCounts = newHiresData.map((item) => ({
+      employment_status_id: item.employment_status_id,
+      newHiresThisMonth: parseInt(item.newHiresThisMonth),
+    }));
+
+    const newSeparatedCounts = newSeparatedData.map((item) => ({
+      employment_status_id: item.employment_status_id,
+      newSeparatedThisMonth: parseInt(item.newSeparatedThisMonth),
+    }));
+
+    const newRegularsCounts = newRegularsData.map((item) => ({
+      employment_status_id: item.employment_status_id,
+      newRegularThisMonth: parseInt(item.newRegularThisMonth),
+    }));
+
+    return allStatuses.map((status) => {
+      const foundAllCount = allCounts.find(
+        (item) => item.employment_status_id === status.employment_status_id
+      );
+      const foundNewHires = newHiresCounts.find(
+        (item) => item.employment_status_id === status.employment_status_id
+      );
+      const foundNewSeparated = newSeparatedCounts.find(
+        (item) => item.employment_status_id === status.employment_status_id
+      );
+      const foundNewRegulars = newRegularsCounts.find(
+        (item) => item.employment_status_id === status.employment_status_id
+      );
+
+      let newThisMonth = 0;
+      if (status.employment_status === "Separated") {
+        newThisMonth = foundNewSeparated
+          ? foundNewSeparated.newSeparatedThisMonth
+          : 0;
+      } else if (status.employment_status === "Regular") {
+        newThisMonth = foundNewRegulars
+          ? foundNewRegulars.newRegularThisMonth
+          : 0;
+      } else {
+        newThisMonth = foundNewHires ? foundNewHires.newHiresThisMonth : 0;
+      }
+
+      return {
+        employment_status_id: status.employment_status_id,
+        employment_status: status.employment_status,
+        count: foundAllCount ? foundAllCount.count : 0,
+        newThisMonth,
+      };
+    });
+  };
+
+  return {
+    countsByStatus: mergeCountsWithStatuses(
+      countsByStatusRaw,
+      newHiresByStatusRaw,
+      newSeparatedByStatusRaw,
+      newRegularsRaw,
+      allStatuses
+    ),
+    activeCount: activeCountResult,
+  };
+};
+
+
+
+
+exports.findHrisUserAccount = async (user_id) => {
+  const hrisUserAccount = await HrisUserAccount.findOne({
+    where: { user_id },
+    include: [
+      {
+        model: HrisUserInfo,
+      },
+      {
+        model: HrisUserAddress,
+      },
+      {
+        model: HrisUserEmergencyContact,
+      },
+      {
+        model: HrisUserHr201,
+      },
       {
         model: HrisUserSalary,
         include: HrisUserSalaryAdjustmentType,
-        where: Object.keys(whereSalary).length ? whereSalary : undefined,
-        required: !!Object.keys(whereSalary).length,
       },
       {
         model: HrisUserEmploymentInfo,
         include: [
-          { model: HrisUserJobLevel },
-          { model: HrisUserEmploymentStatus },
-          { model: HrisUserEmploymentType },
-          { model: HrisUserShiftsTemplate },
+          {
+            model: HrisUserJobLevel,
+          },
+          {
+            model: HrisUserEmploymentStatus,
+          },
+          {
+            model: HrisUserEmploymentType,
+          },
+          {
+            model: HrisUserShiftsTemplate,
+          },
         ],
-        where: Object.keys(whereEmploymentInfo).length
-          ? whereEmploymentInfo
-          : undefined,
-        required: !!Object.keys(whereEmploymentInfo).length,
       },
       {
         model: HrisUserGovernmentId,
@@ -136,143 +640,45 @@ exports.findAllHrisUserAccounts = async ({ include, filters = {} } = {}) => {
           {
             model: Company,
             include: [
-              { model: CompanyAddress },
-              { model: CompanyInfo, include: CompanyIndustry },
+              {
+                model: CompanyAddress,
+              },
+
+              {
+                model: CompanyInfo,
+                include: CompanyIndustry,
+              },
             ],
           },
-          { model: CompanyJobTitle },
-          { model: CompanyDepartment },
-          { model: CompanyDivision },
+          {
+            model: CompanyJobTitle,
+          },
+          {
+            model: CompanyDepartment,
+          },
+          {
+            model: CompanyDivision,
+          },
           {
             model: HrisUserAccount,
             as: "upline",
             include: [{ model: HrisUserInfo }],
           },
-          { model: CompanyOffice },
-          { model: CompanyTeam },
-        ],
-        where: Object.keys(whereDesignation).length
-          ? whereDesignation
-          : undefined,
-        required: !!Object.keys(whereDesignation).length,
-      },
-      
-    ],
-  };
-
-if (include && include.includes("permissions")) {
-  queryOptions.include.push({
-    model: Service,
-    required: true,
-    include: [
-      {
-        model: ServiceFeature,
-        required: true,
-        include: [
           {
-            model: HrisUserAccount,
-            where: { user_id: { [Op.col]: "HrisUserAccount.user_id" } }, 
-            through: {
-              attributes: [],
-            },
-            required: true,
+            model: CompanyOffice,
+          },
+          {
+            model: CompanyTeam,
           },
         ],
       },
     ],
   });
-}
 
-  return await HrisUserAccount.findAll(queryOptions);
-};
+  if (!hrisUserAccount)
+    throw new Error(`No user found with the user_id: ${user_id}`);
 
-
-exports.findHrisUserAccount = async (user_id) => {
-    const hrisUserAccount = await HrisUserAccount.findOne({
-        where: { user_id },
-        include: [
-            {
-                model: HrisUserInfo,
-            },
-            {
-                model: HrisUserAddress,
-            },
-            {
-                model: HrisUserEmergencyContact,
-            },
-            {
-                model: HrisUserHr201,
-            },
-            {
-                model: HrisUserSalary,
-                include: HrisUserSalaryAdjustmentType,
-            },
-            {
-                model: HrisUserEmploymentInfo,
-                include: [
-                    {
-                        model: HrisUserJobLevel,
-                    },
-                    {
-                        model: HrisUserEmploymentStatus,
-                    },
-                    {
-                        model: HrisUserEmploymentType,
-                    },
-                    {
-                        model: HrisUserShiftsTemplate,
-                    },
-                ],
-            },
-            {
-                model: HrisUserGovernmentId,
-                include: HrisUserGovernmentIdType,
-            },
-            {
-                model: HrisUserDesignation,
-                include: [
-                    {
-                        model: Company,
-                        include: [
-                            {
-                                model: CompanyAddress,
-                            },
-
-                            {
-                                model: CompanyInfo,
-                                include: CompanyIndustry,
-                            },
-                        ],
-                    },
-                    {
-                        model: CompanyJobTitle,
-                    },
-                    {
-                        model: CompanyDepartment,
-                    },
-                    {
-                        model: CompanyDivision,
-                    },
-                    {
-                        model: HrisUserAccount,
-                        as: "upline",
-                        include: [{ model: HrisUserInfo }],
-                    },
-                    {
-                        model: CompanyOffice,
-                    },
-                    {
-                        model: CompanyTeam,
-                    },
-                ],
-            },
-        ],
-    });
-
-    if (!hrisUserAccount)
-      throw new Error(`No user found with the user_id: ${user_id}`);
-
-    return hrisUserAccount;
+  return hrisUserAccount;
 };
 
 // exports.findAllHrisUserAccountViaFilter = async (filters) => {
@@ -442,23 +848,23 @@ exports.findHrisUserAccount = async (user_id) => {
 
 
 exports.findHrisUserAccountBasicInfo = async (user_id) => {
-    const hrisUserInfo = await HrisUserInfo.findOne({
-        attributes: [
-            'user_id',
-            'first_name',
-            'last_name',
-            'user_pic',
-            'contact_number',
-            [
-                sequelize.literal(`(
+  const hrisUserInfo = await HrisUserInfo.findOne({
+    attributes: [
+      'user_id',
+      'first_name',
+      'last_name',
+      'user_pic',
+      'contact_number',
+      [
+        sequelize.literal(`(
                     SELECT user_email 
                     FROM hris_user_accounts 
                     WHERE hris_user_accounts.user_id = HrisUserInfo.user_id
                 )`),
-                'user_email'
-            ],
-            [
-                sequelize.literal(`(
+        'user_email'
+      ],
+      [
+        sequelize.literal(`(
                     SELECT job_title 
                     FROM company_job_titles 
                     WHERE company_job_titles.job_title_id = (
@@ -468,16 +874,16 @@ exports.findHrisUserAccountBasicInfo = async (user_id) => {
                         LIMIT 1
                     )
                 )`),
-                'job_title'
-            ]
-        ],
-        where: { user_id },
-        raw: true
-    });
+        'job_title'
+      ]
+    ],
+    where: { user_id },
+    raw: true
+  });
 
-    if (!hrisUserInfo) throw new Error(`No user found with the user_id: ${user_id}`);
+  if (!hrisUserInfo) throw new Error(`No user found with the user_id: ${user_id}`);
 
-    return hrisUserInfo;
+  return hrisUserInfo;
 };
 
 
@@ -747,15 +1153,13 @@ exports.updateEmergencyContacts = async (user_id, emergency_contacts) => {
         if (existing) {
           await existing.destroy({ transaction: t });
           debugLogs.push(
-            `Deleted contact: ${existing.full_name || "null"} (${
-              existing.contact_number || "null"
+            `Deleted contact: ${existing.full_name || "null"} (${existing.contact_number || "null"
             })`
           );
           processedContactIds.add(existing.user_emergency_contact_id);
         } else {
           debugLogs.push(
-            `No contact to delete: ${full_name || "null"} (${
-              contact_number || "null"
+            `No contact to delete: ${full_name || "null"} (${contact_number || "null"
             })`
           );
         }
@@ -764,8 +1168,7 @@ exports.updateEmergencyContacts = async (user_id, emergency_contacts) => {
 
       if ((!full_name || !contact_number) && !isAllEmpty) {
         debugLogs.push(
-          `Keeping incomplete contact (not all empty): ${
-            full_name || "null"
+          `Keeping incomplete contact (not all empty): ${full_name || "null"
           } (${contact_number || "null"})`
         );
 
@@ -820,8 +1223,7 @@ exports.updateEmergencyContacts = async (user_id, emergency_contacts) => {
         ) {
           await existingContact.destroy({ transaction: t });
           debugLogs.push(
-            `Deleted unlisted contact: ${
-              existingContact.full_name || "null"
+            `Deleted unlisted contact: ${existingContact.full_name || "null"
             } (${existingContact.contact_number || "null"})`
           );
         }
@@ -1121,43 +1523,5 @@ exports.updateEmploymentTimeline = async (user_id, updatedFields) => {
     return updatedEmploymentTimeline;
   });
 };
-
-exports.findAllHrisUserAccountViaServiceFeatureAccess = async (service_feature_id) => {
-    return await HrisUserAccount.findAll({
-        include: [
-            {
-                model: HrisUserInfo,
-                required: true
-            },
-            {
-                model: HrisUserAccessPermission,
-                required: true,
-                where: {
-                    service_feature_id
-                }
-            }
-        ]
-    });
-};
-
-
-exports.findAllHrisUserAccountViaServiceAccess = async (service_id) => {
-    return await HrisUserAccount.findAll({
-        include: [
-            {
-                model: HrisUserInfo,
-                required: true
-            },
-            {
-                model: HrisUserServicePermission,
-                required: true,
-                where: {
-                    service_id
-                }
-            }
-        ]
-    });
-};
-
 
 

@@ -29,17 +29,16 @@ exports.create = async (req, res) => {
 }
 
 exports.delete = async (req, res) => {
-    let { user_access_permission_ids } = req.body;
+  const { user_id } = req.params;
 
-    if (!Array.isArray(user_access_permission_ids)) {
-        user_access_permission_ids = [user_access_permission_ids];
-    }
+  if (!user_id) {
+    return res.status(400).json({ message: "user_id is required" });
+  }
 
-    try {
-        await deleteUserAccessPermissions(user_access_permission_ids);
-        return res.status(200).json({ message: "deleted successfully", })
-    } catch (error) {
-        return res.status(500).json({ message: "Failed", error: error.message });
-    }
-
-}
+  try {
+    await deleteUserAccessPermissions(user_id);
+    return res.status(200).json({ message: "All access permissions deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed", error: error.message });
+  }
+};

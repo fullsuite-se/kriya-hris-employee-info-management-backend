@@ -1,10 +1,9 @@
+const { findAllUsersWithPermissions } = require("../services/access-control/user-with-permissions.service");
 const {
   prepareNewHrisUserAccountData,
 } = require("../services/user-data-preprocessing.service");
 const {
-  // findAllHrisUserAccount,
   findHrisUserAccount,
-  // findAllHrisUserAccountViaSearcyQuery,
   createHrisUserAccount,
   updatePersonalDetails,
   isUserIdTaken,
@@ -15,52 +14,79 @@ const {
   updateHr201url,
   updateDesignation,
   updateEmploymentTimeline,
-  // findAllHrisUserAccountViaFilter,
-    getLatestId,
-  
-  findAllHrisUserAccountViaServiceFeatureAccess,
+  getLatestId,
   findHrisUserAccountBasicInfo,
-  findAllHrisUserAccountViaServiceAccess,
   findAllHrisUserAccounts,
+  getEmployeeCounts,
 } = require("../services/user.service");
 const bcryptjs = require("bcryptjs");
+//prod
+// exports.getHrisUserAccounts = async (req, res) => {
+//   try {
+//     const { include, ...filters } = req.query;
+//     const { service_feature_id, service_id } = req.query;
 
+//     if (service_feature_id) {
+//       const hrisUserAccounts =
+//         await findAllHrisUserAccountViaServiceFeatureAccess(service_feature_id);
+
+//       return res.status(200).json({
+//         message: "Users retrieved successfully",
+//         users: hrisUserAccounts,
+//         length: hrisUserAccounts.length,
+//       });
+//     }
+
+//     if (service_id) {
+//       const hrisUserAccounts =
+//         await findAllHrisUserAccountViaServiceAccess(service_id);
+
+//       return res.status(200).json({
+//         message: "Users retrieved successfully",
+//         users: hrisUserAccounts,
+//         length: hrisUserAccounts.length,
+//       });
+//     }
+
+//     const hrisUserAccounts = await findAllHrisUserAccounts({
+//       include,
+//       filters,
+//     });
+
+//     return res.status(200).json({
+//       message: "Users retrieved successfully",
+//       users: hrisUserAccounts,
+//       length: hrisUserAccounts.length,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       message: "Failed to fetch hris user accounts",
+//       error: error.message,
+//     });
+//   }
+// };
+
+//pagination w search
 exports.getHrisUserAccounts = async (req, res) => {
   try {
-    const { include, ...filters } = req.query;
-    const { service_feature_id, service_id } = req.query;
+    const {  page = 1, limit = 10, search, ...filters } = req.query;
 
-    if (service_feature_id) {
-      const hrisUserAccounts =
-        await findAllHrisUserAccountViaServiceFeatureAccess(service_feature_id);
 
-      return res.status(200).json({
-        message: "Users retrieved successfully",
-        users: hrisUserAccounts,
-        length: hrisUserAccounts.length,
-      });
-    }
 
-    if (service_id) {
-      const hrisUserAccounts =
-        await findAllHrisUserAccountViaServiceAccess(service_id);
-
-      return res.status(200).json({
-        message: "Users retrieved successfully",
-        users: hrisUserAccounts,
-        length: hrisUserAccounts.length,
-      });
-    }
-
-    const hrisUserAccounts = await findAllHrisUserAccounts({
-      include,
+    const { count, rows } = await findAllHrisUserAccounts({
+     
       filters,
+      search,
+      page: Number(page),
+      limit: Number(limit),
     });
 
     return res.status(200).json({
       message: "Users retrieved successfully",
-      users: hrisUserAccounts,
-      length: hrisUserAccounts.length,
+      users: rows,
+      total: count,
+      page: Number(page),
+      totalPages: Math.ceil(count / limit),
     });
   } catch (error) {
     res.status(500).json({
@@ -70,6 +96,22 @@ exports.getHrisUserAccounts = async (req, res) => {
   }
 };
 
+
+// get emp count
+exports.getEmployeeCounts = async (req, res) => {
+  try {
+    const data = await getEmployeeCounts();
+    res.json({
+      message: "Employee counts retrieved successfully",
+      countsByStatus: data.countsByStatus,
+      activeCount: data.activeCount,
+      newThisMonth: data.newThisMonth
+    });
+  } catch (err) {
+    console.error("Error fetching employee counts:", err);
+    res.status(500).json({ error: "Failed to fetch employee counts" });
+  }
+};
 
 
 
@@ -849,3 +891,5 @@ exports.updateEmploymentTimeline = async (req, res) => {
     });
   }
 };
+
+
