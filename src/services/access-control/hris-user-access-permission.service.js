@@ -29,12 +29,10 @@ exports.addUserAccessPermissions = async (user_id, service_feature_ids) => {
 }
 
 //delete access feature permission for user
-exports.deleteUserAccessPermissions = async (user_access_permission_ids) => {
-    for (const user_access_permission_id of user_access_permission_ids) {
-        const accessPermission = await HrisUserAccessPermission.findByPk(user_access_permission_id);
+exports.deleteUserAccessPermissions = async (user_id) => {
+  await HrisUserAccessPermission.destroy({
+    where: { user_id }
+  });
 
-        if (!accessPermission) throw new Error("No access permission found");
-        accessPermission.destroy();
-        return;
-    }
-}
+  return;
+};
