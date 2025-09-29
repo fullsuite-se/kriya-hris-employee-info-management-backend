@@ -5,7 +5,9 @@ const sequelize = new Sequelize(
   env.DB_NAME_DEV,
   env.DB_USER,
   env.DB_PASSWORD,
+
   {
+    timezone: "+08:00",
     host: process.env.DB_HOST,
     port: process.env.DB_PORT || 3306,
     dialect: "mysql",
@@ -15,15 +17,15 @@ const sequelize = new Sequelize(
     pool: {
       max: 5,
       min: 0,
-      acquire: 60000, 
-      idle: 10000,  
+      acquire: 60000,
+      idle: 10000,
     },
 
     dialectOptions: {
-      connectTimeout: 20000, 
+      connectTimeout: 20000,
       ssl: {
-        require: true,       
-        rejectUnauthorized: false, 
+        require: true,
+        rejectUnauthorized: false,
       },
     },
   }

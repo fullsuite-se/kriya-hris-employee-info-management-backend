@@ -6,11 +6,17 @@ for all the systems in Kriya ecosystemd, i.e.,
 3) Suitelifer
 4) ATS
 */
-
+ 
 const express = require('express');
 const router = express.Router();
 const authController = require("../controllers/auth.controller");
 
 router.post('/login', authController.login);
 
+
+router.post("/reset-request", authController.requestResetPasswordHris);
+router.post("/verify-otp", authController.verifyOTP);
+router.post("/reset-password", authController.resetPasswordHris);
+
+ 
 module.exports = router;
