@@ -16,7 +16,7 @@ router.post('/login', authController.login);
 
 router.post("/reset-request", authController.requestResetPasswordHris);
 router.post("/verify-otp", authController.verifyOTP);
-router.post("/reset-password", authController.resetPasswordHris);
+router.patch("/reset-password", authController.resetPasswordHris);
 
  
 module.exports = router;

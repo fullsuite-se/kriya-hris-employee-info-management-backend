@@ -36,7 +36,7 @@ const CompanyAddress = sequelize.define(
             allowNull: false
         },
         postal_code: {
-            type: DataTypes.STRING(4),
+            type: DataTypes.STRING(100),
             allowNull: false
         },
         province_region: {
