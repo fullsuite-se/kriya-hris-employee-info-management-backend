@@ -67,7 +67,7 @@ exports.requestResetPasswordHris = async (req, res) => {
           <h2 style="color: #0097b2;">FULLSUITE Password Reset OTP</h2>
           <p>Hello,</p>
           <p>We received a request to reset the password for your account.</p>
-          <p>Your One-Time Password (OTP) is:</p>
+          <p>Your One-Time Passcode (OTP) is:</p>
           <div style="text-align: center; margin: 15px 0;">
             <div style="background-color: #0097b2; color: white; padding: 12px 24px; 
                         border-radius: 5px; display: inline-block; font-weight: bold; 
@@ -75,9 +75,9 @@ exports.requestResetPasswordHris = async (req, res) => {
               ${otp}
             </div>
           </div>
-          <p><strong>This OTP is valid for 10 minutes.</strong> After it expires, please request a new one.</p>
+          <p><strong>This OTP is valid for 10 minutes.</strong> If it expires, you can request a new one.</p>
           <p>If you did not request this reset, you can safely ignore this email. Your password will remain unchanged.</p>
-          <p style="color: #777; font-size: 12px;">For security reasons, this OTP will expire in 10 minutes.</p>
+          <p style="color: #777; font-size: 12px;">For your security, please do not share your OTP with anyone.</p>
         </div>
       `,
         });
