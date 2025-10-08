@@ -28,7 +28,7 @@ const HrisUserAddress = sequelize.define(
     },
     barangay: {
       type: DataTypes.STRING(100),
-      allowNull: false,
+      allowNull: true,
     },
     barangayCode: {
       type: DataTypes.STRING(100),
