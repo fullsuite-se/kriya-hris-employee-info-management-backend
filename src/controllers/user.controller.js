@@ -268,34 +268,34 @@ exports.createHrisUserAccount = async (req, res) => {
     "job_level_id",
     "employment_type_id",
 
-    //names
-    "currentBarangay",
-    "currentCity",
-    "currentPostalCode",
-    "currentProvince",
-    "currentRegion",
-    "currentCountry",
-    //codes
-    "currentBarangayCode",
-    "currentCityCode",
-    "currentProvinceCode",
-    "currentRegionCode",
+    // //names
+    // "currentBarangay",
+    // "currentCity",
+    // "currentPostalCode",
+    // "currentProvince",
+    // "currentRegion",
+    // "currentCountry",
+    // //codes
+    // "currentBarangayCode",
+    // "currentCityCode",
+    // "currentProvinceCode",
+    // "currentRegionCode",
 
-    //names
-    "permanentBarangay",
-    "permanentCity",
-    "permanentPostalCode",
-    "permanentProvince",
-    "permanentRegion",
-    "permanentCountry",
-    //codes
-    "permanentBarangayCode",
-    "permanentCityCode",
-    "permanentProvinceCode",
-    "permanentRegionCode",
+    // //names
+    // "permanentBarangay",
+    // "permanentCity",
+    // "permanentPostalCode",
+    // "permanentProvince",
+    // "permanentRegion",
+    // "permanentCountry",
+    // //codes
+    // "permanentBarangayCode",
+    // "permanentCityCode",
+    // "permanentProvinceCode",
+    // "permanentRegionCode",
 
     //added
-    "nationality",
+    // "nationality",
     // "height_cm",
     // "weight_kg",
     // "company_issued_phone_number",
@@ -507,6 +507,8 @@ exports.updatePersonalDetails = async (req, res) => {
     height_cm,
     weight_kg,
     blood_type,
+    user_pic,
+
   } = req.body;
 
   console.log("req.body:", req.body);
@@ -526,6 +528,7 @@ exports.updatePersonalDetails = async (req, res) => {
       civil_status,
       height_cm,
       weight_kg,
+    user_pic,
       blood_type,
     });
 

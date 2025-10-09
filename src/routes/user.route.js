@@ -20,6 +20,7 @@ const hrisUserEmploymentTypeController = require("../controllers/employment-cont
 const { authenticateJWTToken, authenticateAPIKey } = require("../middleware/auth.middleware");
 const { checkAuthorizationToAccessFeature } = require("../middleware/authorization.middleware");
 const env = require("../config/env");
+const { recaptcha } = require("../middleware/recaptcha.middleware");
 
 //base: /hris-user-accounts
 /**
@@ -31,7 +32,7 @@ const env = require("../config/env");
 
 router.get('/', authenticateJWTToken, userController.getHrisUserAccounts);
 // router.get('/', authenticateJWTToken, checkAuthorizationToAccessFeature([env.EMPLOYEE_MANAGEMENT]), userController.getHrisUserAccounts);
-router.post('/', authenticateJWTToken, userController.createHrisUserAccount);
+router.post('/', recaptcha, authenticateJWTToken, userController.createHrisUserAccount);
 router.get("/employee-counts", authenticateJWTToken, userController.getEmployeeCounts);
 
 //single user

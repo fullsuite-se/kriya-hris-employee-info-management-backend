@@ -98,13 +98,13 @@ const { buildUserFilters } = require("../utils/filter-builder");
 //       hris_user_infos.middle_name LIKE :searchTerm OR
 //       hris_user_infos.last_name LIKE :searchTerm OR
 //       hris_user_infos.extension_name LIKE :searchTerm OR
-      
+
 //       -- Combined name searches
 //       CONCAT(hris_user_infos.first_name, ' ', hris_user_infos.last_name) LIKE :searchTerm OR
 //       CONCAT(hris_user_infos.last_name, ', ', hris_user_infos.first_name) LIKE :searchTerm OR
 //       CONCAT(hris_user_infos.first_name, ' ', COALESCE(hris_user_infos.middle_name, ''), ' ', hris_user_infos.last_name) LIKE :searchTerm OR
 //       CONCAT(hris_user_infos.last_name, ', ', hris_user_infos.first_name, ' ', COALESCE(hris_user_infos.middle_name, '')) LIKE :searchTerm OR
-      
+
 //       -- Reverse order searches
 //       CONCAT(hris_user_infos.last_name, ' ', hris_user_infos.first_name) LIKE :searchTerm
 //     `;
@@ -242,6 +242,7 @@ exports.findAllHrisUserAccounts = async ({
           "middle_name",
           "last_name",
           "extension_name",
+          "user_pic",
         ],
         where: Object.keys(whereInfo).length ? whereInfo : {},
         required: !!Object.keys(whereInfo).length,
@@ -1241,6 +1242,7 @@ exports.updateEmergencyContacts = async (user_id, emergency_contacts) => {
   return results;
 };
 
+
 exports.updateAddresses = async (user_id, addresses) => {
   const debugLogs = [];
 
@@ -1254,15 +1256,14 @@ exports.updateAddresses = async (user_id, addresses) => {
       transaction: t,
     });
 
-    const existingMap = new Map(
-      existingAddresses.map((addr) => [addr.user_address_id, addr])
+    const existingByType = new Map(
+      existingAddresses.map((addr) => [addr.address_type.toUpperCase(), addr])
     );
 
-    const processedIds = new Set();
+    const processedTypes = new Set();
 
     for (const addr of addresses) {
       const {
-        user_address_id,
         building_num,
         street,
         barangay,
@@ -1278,8 +1279,17 @@ exports.updateAddresses = async (user_id, addresses) => {
         address_type,
       } = addr;
 
-      if (user_address_id && existingMap.has(user_address_id)) {
-        const existing = existingMap.get(user_address_id);
+      const typeKey = address_type?.toUpperCase();
+      if (!typeKey || !["CURRENT", "PERMANENT"].includes(typeKey)) {
+        debugLogs.push(`Skipped invalid address type: ${address_type}`);
+        continue;
+      }
+
+      processedTypes.add(typeKey);
+
+      const existing = existingByType.get(typeKey);
+
+      if (existing) {
         await existing.update(
           {
             building_num,
@@ -1294,12 +1304,11 @@ exports.updateAddresses = async (user_id, addresses) => {
             region,
             regionCode,
             country,
-            address_type,
           },
           { transaction: t }
         );
-        debugLogs.push(`Updated ${address_type} address (${user_address_id})`);
-        processedIds.add(user_address_id);
+
+        debugLogs.push(`Updated ${typeKey} address (${existing.user_address_id})`);
       } else {
         const newId = generateUUIV4();
         await HrisUserAddress.create(
@@ -1318,19 +1327,21 @@ exports.updateAddresses = async (user_id, addresses) => {
             region,
             regionCode,
             country,
-            address_type,
+            address_type: typeKey,
           },
           { transaction: t }
         );
-        debugLogs.push(`Inserted ${address_type} address (${newId})`);
-        processedIds.add(newId);
+
+        debugLogs.push(`Inserted ${typeKey} address (${newId})`);
       }
     }
+
     for (const existing of existingAddresses) {
-      if (!processedIds.has(existing.user_address_id)) {
+      const typeKey = existing.address_type.toUpperCase();
+      if (!processedTypes.has(typeKey)) {
         await existing.destroy({ transaction: t });
         debugLogs.push(
-          `Deleted ${existing.address_type} address (${existing.user_address_id})`
+          `Deleted ${typeKey} address (${existing.user_address_id})`
         );
       }
     }
@@ -1345,6 +1356,7 @@ exports.updateAddresses = async (user_id, addresses) => {
 
   return results;
 };
+
 
 exports.updateHr201url = async (user_id, hr201_url) => {
   return await HrisUserHr201.sequelize.transaction(async (t) => {
