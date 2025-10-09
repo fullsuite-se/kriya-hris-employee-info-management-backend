@@ -312,7 +312,7 @@ exports.findAllUsersWithPermissions = async (
     const users = await HrisUserAccount.findAll({
       attributes: ["user_id", "user_email"],
       include: [
-        { model: HrisUserInfo, attributes: ["first_name", "middle_name", "last_name", "extension_name"], required: true },
+        { model: HrisUserInfo, attributes: ["first_name", "middle_name", "last_name", "extension_name", "user_pic"], required: true },
         { model: HrisUserServicePermission, attributes: ["service_id"], include: [{ model: Service, attributes: ["service_name"], required: true }], required: true },
         { model: HrisUserAccessPermission, attributes: ["service_feature_id"], include: [{ model: ServiceFeature, attributes: ["feature_name"], required: true }], required: false },
       ],
