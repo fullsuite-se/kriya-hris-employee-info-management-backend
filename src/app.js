@@ -9,10 +9,11 @@ const { startRegularizationJob } = require("./cron/employment-regularization.cro
 const { startSeparationJob } = require("./cron/employment-separated.cron");
 
 
-app.use(cors({
-    origin: [env.VITE_FRONTEND_URL_DEVELOPMENT, env.VITE_FRONTEND_URL_PRODUCTION, env.VITE_FRONTEND_PAYROLL_URL_DEVELOPMENT, env.VITE_FRONTEND_PAYROLL_URL_PRODUCTION, env.VITE_FRONTEND_URL_DEVELOPMENT_SL, env.VITE_FRONTEND_URL_PRODUCTION_SL, "https://kriya-hris.vercel.app"],
-    credentials: true,
-}));
+// app.use(cors({
+//     origin: [env.VITE_FRONTEND_URL_DEVELOPMENT, env.VITE_FRONTEND_URL_PRODUCTION, env.VITE_FRONTEND_PAYROLL_URL_DEVELOPMENT, env.VITE_FRONTEND_PAYROLL_URL_PRODUCTION, env.VITE_FRONTEND_URL_DEVELOPMENT_SL, env.VITE_FRONTEND_URL_PRODUCTION_SL, "https://kriya-hris.vercel.app"],
+//     credentials: true,
+// }));
+app.use(cors({ origin: "*" }));
 
 console.log("Allowed origins:", [
     env.VITE_FRONTEND_URL_DEVELOPMENT,
