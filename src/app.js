@@ -7,9 +7,6 @@ const routes = require("./routes");
 const env = require("./config/env");
 const { startRegularizationJob } = require("./cron/employment-regularization.cron");
 const { startSeparationJob } = require("./cron/employment-separated.cron");
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use('/static', express.static(path.join(__dirname, "..", "public")));
 
 
 app.use(cors({
@@ -17,8 +14,24 @@ app.use(cors({
     credentials: true,
 }));
 
+console.log("Allowed origins:", [
+    env.VITE_FRONTEND_URL_DEVELOPMENT,
+    env.VITE_FRONTEND_URL_PRODUCTION,
+    env.VITE_FRONTEND_PAYROLL_URL_DEVELOPMENT,
+    env.VITE_FRONTEND_PAYROLL_URL_PRODUCTION,
+    env.VITE_FRONTEND_URL_DEVELOPMENT_SL,
+    env.VITE_FRONTEND_URL_PRODUCTION_SL,
+    "https://kriya-hris.vercel.app",
+]);
+
+
 startRegularizationJob();
 startSeparationJob();
+
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use('/static', express.static(path.join(__dirname, "..", "public")));
+
 
 app.use('/api', routes);
 
