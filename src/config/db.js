@@ -24,7 +24,7 @@ const sequelize = new Sequelize(
     dialectOptions: {
       connectTimeout: 20000,
       ssl: {
-        require: true,
+        require: false,
         rejectUnauthorized: false,
       },
     },
