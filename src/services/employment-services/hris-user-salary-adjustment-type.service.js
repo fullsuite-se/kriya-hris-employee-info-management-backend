@@ -3,7 +3,9 @@ const { getCreatedUpdatedIsoUTCNow } = require("../../utils/date");
 const { generateUUIV4 } = require("../../utils/ids");
 
 exports.findAll = async () => {
-    return await HrisUserSalaryAdjustmentType.findAll();
+    return await HrisUserSalaryAdjustmentType.findAll({
+        order: [['salary_adjustment_type', 'ASC']]
+    });
 }
 
 exports.create = async (salary_adjustment_type) => {

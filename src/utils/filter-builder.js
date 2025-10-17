@@ -11,6 +11,8 @@ function buildUserFilters(filters) {
     q,
     supervisor,
     job_position,
+    office,
+    employer,
   } = filters;
 
   const whereAccount = {};
@@ -51,6 +53,25 @@ function buildUserFilters(filters) {
     }
   }
 
+  if (office) {
+    const list = office
+      .split(",")
+      .map((d) => d.trim())
+      .filter(Boolean);
+    if (list.length) {
+      whereDesignation.office_id = { [Op.in]: list };
+    }
+  }
+  if (employer) {
+    const list = employer
+      .split(",")
+      .map((d) => d.trim())
+      .filter(Boolean);
+    if (list.length) {
+      whereDesignation.company_employer_id = { [Op.in]: list };
+    }
+  }
+
   if (supervisor) {
     const list = supervisor
       .split(",")
@@ -69,7 +90,7 @@ function buildUserFilters(filters) {
       whereDesignation.job_title_id = { [Op.in]: list };
     }
   }
-  
+
 
   if (q) {
     const like = { [Op.like]: `%${q}%` };

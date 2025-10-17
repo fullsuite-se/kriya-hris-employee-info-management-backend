@@ -1,4 +1,4 @@
-const hrisUserGovernmentIdTypeService = require("../../services/employment-services/hris-user-government-id-type.controller");
+const hrisUserGovernmentIdTypeService = require("../../services/employment-services/hris-user-government-id-type.service");
 
 exports.getAll = async (req, res) => {
     try {

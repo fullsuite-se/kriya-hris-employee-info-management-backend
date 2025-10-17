@@ -27,6 +27,7 @@ const HrisUserEmploymentStatus = require("./hris-user-employment-status.model");
 const HrisUserSalaryAdjustmentType = require("./hris-user-salary-adjustment-type.model");
 const CompanyTeam = require("./company-teams.model");
 const CompanyOffice = require("./company-office.model");
+const CompanyEmployer = require("./company-employer.model");
 const HrisUserJobLevel = require("./hris-user-job-level.model");
 const HrisUserShiftsTemplate = require("./hris-user-shifts-template.model");
 const HrisUserHr201 = require("./hris-user-hr201.model");
@@ -53,6 +54,9 @@ HrisUserHr201.belongsTo(HrisUserAccount, { foreignKey: 'user_id' });
 
 CompanyOffice.hasMany(HrisUserDesignation, { foreignKey: 'office_id', onDelete: 'CASCADE' },);
 HrisUserDesignation.belongsTo(CompanyOffice, { foreignKey: 'office_id' });
+
+CompanyEmployer.hasMany(HrisUserDesignation, { foreignKey: 'company_employer_id', onDelete: 'CASCADE' },);
+HrisUserDesignation.belongsTo(CompanyEmployer, { foreignKey: 'company_employer_id' });
 
 CompanyTeam.hasMany(HrisUserDesignation, { foreignKey: 'team_id', onDelete: 'CASCADE' });
 HrisUserDesignation.belongsTo(CompanyTeam, { foreignKey: 'team_id' });
@@ -177,11 +181,11 @@ HrisUserServicePermission.belongsTo(HrisUserAccount, { foreignKey: 'user_id' });
 
 
 // HrisUserAccount - Service through HrisUserServicePermission
-HrisUserAccount.belongsToMany(Service, { through: HrisUserServicePermission, foreignKey: "user_id", otherKey: "service_id"});
-Service.belongsToMany(HrisUserAccount, {through: HrisUserServicePermission, foreignKey: "service_id", otherKey: "user_id"});
+HrisUserAccount.belongsToMany(Service, { through: HrisUserServicePermission, foreignKey: "user_id", otherKey: "service_id" });
+Service.belongsToMany(HrisUserAccount, { through: HrisUserServicePermission, foreignKey: "service_id", otherKey: "user_id" });
 // HrisUserAccount - ServiceFeature through HrisUserAccessPermission
-HrisUserAccount.belongsToMany(ServiceFeature, {through: HrisUserAccessPermission,foreignKey: "user_id",otherKey: "service_feature_id"});
-ServiceFeature.belongsToMany(HrisUserAccount, {through: HrisUserAccessPermission,foreignKey: "service_feature_id",otherKey: "user_id"});
+HrisUserAccount.belongsToMany(ServiceFeature, { through: HrisUserAccessPermission, foreignKey: "user_id", otherKey: "service_feature_id" });
+ServiceFeature.belongsToMany(HrisUserAccount, { through: HrisUserAccessPermission, foreignKey: "service_feature_id", otherKey: "user_id" });
 
 //export
 module.exports = {
@@ -212,6 +216,7 @@ module.exports = {
     HrisUserSalaryAdjustmentType,
     CompanyTeam,
     CompanyOffice,
+    CompanyEmployer,
     HrisUserJobLevel,
     HrisUserEmploymentType,
     HrisUserShiftsTemplate,

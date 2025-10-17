@@ -34,6 +34,7 @@ router.get('/', authenticateJWTToken, userController.getHrisUserAccounts);
 // router.get('/', authenticateJWTToken, checkAuthorizationToAccessFeature([env.EMPLOYEE_MANAGEMENT]), userController.getHrisUserAccounts);
 router.post('/', recaptcha, authenticateJWTToken, userController.createHrisUserAccount);
 router.get("/employee-counts", authenticateJWTToken, userController.getEmployeeCounts);
+router.get('/dropdown', authenticateJWTToken, userController.getEmployeesForDropdown);
 
 //single user
 router.get('/:user_id', authenticateJWTToken, userController.getHrisUserAccount);
@@ -84,23 +85,20 @@ router.delete("/employment-info/shift-templates/:shift_template_id", hrisUserShi
 // //employment-info/job-levels
 router.post("/employment-info/job-levels", hrisUserJobLevelController.create);
 router.get("/employment-info/job-levels", hrisUserJobLevelController.getAll);
-// router.get('/employment-info/job-levels/:job_level_id',)
-// router.patch('/employment-info/job-levels/:job_level_id',)
-// router.delete('/employment-info/job-levels/:job_level_id',)
+router.patch("/employment-info/job-levels/:job_level_id", hrisUserJobLevelController.update);
+router.delete("/employment-info/job-levels/:job_level_id", hrisUserJobLevelController.delete);
 
 // //employment-info/employment-statuses
-router.post("/employment-info/employment-statuses", hrisUserEmploymentStatusController.create);
 router.get("/employment-info/employment-statuses", hrisUserEmploymentStatusController.getAll);
-// router.get('/employment-info/employment-statuses/:employment_status_id',);
-// router.patch('/employment-info/employment-statuses/:employment_status_id',);
-// router.delete('/employment-info/employment-statuses/:employment_status_id',);
+router.post("/employment-info/employment-statuses", hrisUserEmploymentStatusController.create);
+router.patch("/employment-info/employment-statuses/:employment_status_id", hrisUserEmploymentStatusController.update);
+router.delete("/employment-info/employment-statuses/:employment_status_id", hrisUserEmploymentStatusController.delete);
 
-// //employment-info/employement-type
+// //employment-info/employment-type
 router.post("/employment-info/employment-types", hrisUserEmploymentTypeController.create);
 router.get("/employment-info/employment-types", hrisUserEmploymentTypeController.getAll);
-// router.get('/employment-info/employment-types/:employment_type_id',);
-// router.patch('/employment-info/employment-types/:employment_type_id',);
-// router.delete('/employment-info/employment-types/:employment_type_id',);
+router.patch('/employment-info/employment-types/:employment_type_id', hrisUserEmploymentTypeController.update);
+router.delete('/employment-info/employment-types/:employment_type_id', hrisUserEmploymentTypeController.delete);
 
 //salaries
 router.get("/:user_id/salaries", hrisUserSalaryController.getOne);

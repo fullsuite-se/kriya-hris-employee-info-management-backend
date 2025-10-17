@@ -19,9 +19,8 @@ exports.create = async (company_id, team_name, team_description) => {
 
 exports.findAll = async (company_id) => {
     const teams = await CompanyTeam.findAll({
-        where: {
-            company_id
-        }
+        where: { company_id },
+        order: [['team_name', 'ASC']]
     });
 
     return teams;
@@ -56,6 +55,6 @@ exports.delete = async (team_id) => {
 
     team.destroy();
     team.save();
-    
+
     return team;
 };

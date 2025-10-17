@@ -43,7 +43,7 @@ const HrisUserInfo = sequelize.define(
     },
     personal_email: {
       type: DataTypes.STRING(100),
-      allowNull: false,
+      allowNull: true,
     },
     contact_number: {
       type: DataTypes.STRING(15),

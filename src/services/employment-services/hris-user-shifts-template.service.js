@@ -2,7 +2,9 @@ const { HrisUserShiftsTemplate } = require("../../models");
 const { generateUUIV4 } = require("../../utils/ids");
 
 exports.findAll = async () => {
-    const shifts = await HrisUserShiftsTemplate.findAll();
+    const shifts = await HrisUserShiftsTemplate.findAll({
+        order: [['shift_name', 'ASC']]
+    });
     return shifts;
 };
 

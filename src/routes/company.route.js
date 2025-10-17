@@ -3,6 +3,7 @@ const router = express.Router();
 const companyController = require("../controllers/company-controllers/company.controller");
 const companyTeamController = require("../controllers/company-controllers/company-teams.controller");
 const companyOfficeController = require("../controllers/company-controllers/company-office.controller");
+const companyEmployerController = require("../controllers/company-controllers/company-employer.controller");
 const companyDepartmentController = require("../controllers/company-controllers/company-deparment.controller");
 const companyDivisionController = require("../controllers//company-controllers/company-division.controller");
 const companyJobTitleController = require("../controllers/company-controllers/company-job.controller");
@@ -11,7 +12,18 @@ const { authenticateJWTToken } = require("../middleware/auth.middleware");
 
 //company
 router.get('/', companyController.getCompanies);
+
+//company-employer
+router.post('/employers', companyEmployerController.create); //create new company employer
+router.get('/employers', companyEmployerController.getAll); //get all company employer
+router.get('/employers/:company_employer_id', companyEmployerController.getOne);
+router.patch('/employers/:company_employer_id', companyEmployerController.update);
+router.delete('/employers/:company_employer_id', companyEmployerController.delete);
+
+
 router.get('/:company_id', companyController.getCompany);
+
+
 
 //company-teams
 router.post('/:company_id/teams', companyTeamController.create); //create new company team
@@ -26,6 +38,7 @@ router.get('/:company_id/offices', companyOfficeController.getAll); //get all co
 router.get('/:company_id/offices/:office_id', companyOfficeController.getOne);
 router.patch('/:company_id/offices/:office_id', companyOfficeController.update);
 router.delete('/:company_id/offices/:office_id', companyOfficeController.delete);
+
 
 //company-departments
 router.post('/:company_id/departments', companyDepartmentController.create); //create new department

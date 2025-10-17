@@ -38,42 +38,62 @@ exports.findAllCompanies = async () => {
     ],
   });
 };
-
 exports.findOneCompany = async (company_id) => {
-  const companies = await Company.findOne({
-    where: {
-      company_id: company_id,
-    },
+  const company = await Company.findOne({
+    where: { company_id },
+    attributes: ["company_id", "company_email", "status", "date_added"],
+
     include: [
       {
         model: CompanyInfo,
-        include: CompanyIndustry,
+        attributes: [
+          "company_info_id",
+          "company_id",
+          "industry_id",
+          "industry_type",
+          "business_type",
+          "company_name",
+          "company_trade_name",
+          "company_phone",
+          "company_brn",
+          "company_tin",
+          "employee_count",
+          "company_logo",
+        ],
+        include: [
+          {
+            model: CompanyIndustry,
+            attributes: [
+              "industry_id",
+              "industry_type",
+              "created_at",
+              "updated_at",
+            ],
+          },
+        ],
       },
       {
         model: CompanyAddress,
-      },
-      {
-        model: CompanyDepartment,
-      },
-      {
-        model: CompanyDivision,
-      },
-      {
-        model: CompanyJobTitle,
-      },
-      {
-        model: CompanyTeam,
-      },
-      {
-        model: CompanyOffice,
+        attributes: [
+          "company_addresses_id",
+          "company_id",
+          "address_type",
+          "floor_bldg_street",
+          "barangay",
+          "city_municipality",
+          "postal_code",
+          "province_region",
+          "country",
+        ],
       },
     ],
   });
 
-  if (!companies) throw new Error("No companies found");
+  if (!company) throw new Error("No companies found");
 
-  return companies;
+  return company;
 };
+
 
 exports.updateCompanyDetails = async (company_id, updateData) => {
   const companyInfoFields = [

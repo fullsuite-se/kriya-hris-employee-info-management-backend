@@ -18,63 +18,19 @@ const {
   findHrisUserAccountBasicInfo,
   findAllHrisUserAccounts,
   getEmployeeCounts,
+  findAllEmployeesForDropdown,
 } = require("../services/user.service");
 const bcryptjs = require("bcryptjs");
-//prod
-// exports.getHrisUserAccounts = async (req, res) => {
-//   try {
-//     const { include, ...filters } = req.query;
-//     const { service_feature_id, service_id } = req.query;
-
-//     if (service_feature_id) {
-//       const hrisUserAccounts =
-//         await findAllHrisUserAccountViaServiceFeatureAccess(service_feature_id);
-
-//       return res.status(200).json({
-//         message: "Users retrieved successfully",
-//         users: hrisUserAccounts,
-//         length: hrisUserAccounts.length,
-//       });
-//     }
-
-//     if (service_id) {
-//       const hrisUserAccounts =
-//         await findAllHrisUserAccountViaServiceAccess(service_id);
-
-//       return res.status(200).json({
-//         message: "Users retrieved successfully",
-//         users: hrisUserAccounts,
-//         length: hrisUserAccounts.length,
-//       });
-//     }
-
-//     const hrisUserAccounts = await findAllHrisUserAccounts({
-//       include,
-//       filters,
-//     });
-
-//     return res.status(200).json({
-//       message: "Users retrieved successfully",
-//       users: hrisUserAccounts,
-//       length: hrisUserAccounts.length,
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       message: "Failed to fetch hris user accounts",
-//       error: error.message,
-//     });
-//   }
-// };
 
 //pagination w search
 exports.getHrisUserAccounts = async (req, res) => {
   try {
-    const {  page = 1, limit = 10, search, ...filters } = req.query;
+    const { page = 1, limit = 10, search, ...filters } = req.query;
 
 
 
     const { count, rows } = await findAllHrisUserAccounts({
-     
+
       filters,
       search,
       page: Number(page),
@@ -96,6 +52,27 @@ exports.getHrisUserAccounts = async (req, res) => {
   }
 };
 
+//dropdown
+exports.getEmployeesForDropdown = async (req, res) => {
+  try {
+    const { search } = req.query;
+
+    const employees = await findAllEmployeesForDropdown({
+      search: search?.trim() || ''
+    });
+
+    return res.status(200).json({
+      message: "Employees retrieved successfully for dropdown",
+      employees: employees,
+      total: employees.length,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to fetch employees for dropdown",
+      error: error.message,
+    });
+  }
+};
 
 // get emp count
 exports.getEmployeeCounts = async (req, res) => {
@@ -116,25 +93,25 @@ exports.getEmployeeCounts = async (req, res) => {
 
 
 exports.getHrisUserAccountBasicInfo = async (req, res) => {
-    const { user_id } = req.params;
+  const { user_id } = req.params;
 
-    try {
-        const user = await findHrisUserAccountBasicInfo(user_id);
-        res.status(200).json({ message: "User retrieved successfully", user });
-    } catch (error) {
-        res.status(500).json({ message: "Failed to fetch hris user acccount", error: error.message })
-    }
+  try {
+    const user = await findHrisUserAccountBasicInfo(user_id);
+    res.status(200).json({ message: "User retrieved successfully", user });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch hris user acccount", error: error.message })
+  }
 }
 
 exports.getHrisUserAccountBasicInfoPayrollFrontend = async (req, res) => {
-    const { system_user_id } = req.user;
+  const { system_user_id } = req.user;
 
-    try {
-        const user = await findHrisUserAccountBasicInfo(system_user_id);
-        res.status(200).json({ message: "User retrieved successfully", user });
-    } catch (error) {
-        res.status(500).json({ message: "Failed to fetch hris user acccount", error: error.message })
-    }
+  try {
+    const user = await findHrisUserAccountBasicInfo(system_user_id);
+    res.status(200).json({ message: "User retrieved successfully", user });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch hris user acccount", error: error.message })
+  }
 }
 
 
@@ -257,7 +234,7 @@ exports.createHrisUserAccount = async (req, res) => {
     "user_password",
     "first_name",
     "last_name",
-    "personal_email",
+    // "personal_email",
     "job_title_id",
     // "base_pay",
     // "salary_adjustment_type_id",
@@ -528,7 +505,7 @@ exports.updatePersonalDetails = async (req, res) => {
       civil_status,
       height_cm,
       weight_kg,
-    user_pic,
+      user_pic,
       blood_type,
     });
 
@@ -741,7 +718,6 @@ exports.updateHr201url = async (req, res) => {
     });
   }
 };
-
 exports.updateDesignation = async (req, res) => {
   const { user_id } = req.params;
   const { system_user_id } = req.user;
@@ -757,6 +733,7 @@ exports.updateDesignation = async (req, res) => {
   }
 
   const {
+    company_employer_id,
     company_id,
     job_title_id,
     department_id,
@@ -775,6 +752,7 @@ exports.updateDesignation = async (req, res) => {
   } = req.body;
 
   console.log("Controller: Received request body", {
+    company_employer_id,
     company_id,
     job_title_id,
     department_id,
@@ -792,28 +770,29 @@ exports.updateDesignation = async (req, res) => {
     employment_type_id,
   });
 
-  // Designation update
+  // Designation update - all fields are now optional
   const designationFields = {};
-  if (company_id) designationFields.company_id = company_id;
-  if (job_title_id) designationFields.job_title_id = job_title_id;
-  if (department_id) designationFields.department_id = department_id;
-  if (division_id) designationFields.division_id = division_id;
-  if (upline_id) designationFields.upline_id = upline_id;
-  if (office_id) designationFields.office_id = office_id;
-  if (team_id) designationFields.team_id = team_id;
+  if (company_employer_id !== undefined) designationFields.company_employer_id = company_employer_id;
+  if (company_id !== undefined) designationFields.company_id = company_id;
+  if (job_title_id !== undefined) designationFields.job_title_id = job_title_id;
+  if (department_id !== undefined) designationFields.department_id = department_id;
+  if (division_id !== undefined) designationFields.division_id = division_id;
+  if (upline_id !== undefined) designationFields.upline_id = upline_id;
+  if (office_id !== undefined) designationFields.office_id = office_id;
+  if (team_id !== undefined) designationFields.team_id = team_id;
 
-  // Employment update
+  // Employment update - all fields remain optional
   const employmentFields = {};
-  if (shift_template_id) employmentFields.shift_template_id = shift_template_id;
-  if (date_hired) employmentFields.date_hired = date_hired;
-  if (date_regularization)
+  if (shift_template_id !== undefined) employmentFields.shift_template_id = shift_template_id;
+  if (date_hired !== undefined) employmentFields.date_hired = date_hired;
+  if (date_regularization !== undefined)
     employmentFields.date_regularization = date_regularization;
-  if (date_offboarding) employmentFields.date_offboarding = date_offboarding;
-  if (date_separated) employmentFields.date_separated = date_separated;
-  if (employment_status_id)
+  if (date_offboarding !== undefined) employmentFields.date_offboarding = date_offboarding;
+  if (date_separated !== undefined) employmentFields.date_separated = date_separated;
+  if (employment_status_id !== undefined)
     employmentFields.employment_status_id = employment_status_id;
-  if (job_level_id) employmentFields.job_level_id = job_level_id;
-  if (employment_type_id)
+  if (job_level_id !== undefined) employmentFields.job_level_id = job_level_id;
+  if (employment_type_id !== undefined)
     employmentFields.employment_type_id = employment_type_id;
 
   console.log("Controller: Prepared fields", {

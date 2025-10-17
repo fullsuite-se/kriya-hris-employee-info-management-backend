@@ -1,5 +1,5 @@
 const { Op } = require("sequelize");
-const { HrisUserAccount, HrisUserInfo, HrisUserAddress, HrisUserEmergencyContact, HrisUserEmploymentInfo, HrisUserDesignation, HrisUserSalary, Company, CompanyAddress, CompanyDepartment, CompanyDivision, CompanyInfo, CompanyJobTitle, CompanyIndustry, HrisUserSalaryAdjustmentType, HrisUserJobLevel, HrisUserEmploymentStatus, HrisUserEmploymentType, HrisUserHr201, CompanyOffice, CompanyTeam, HrisUserGovernmentId, HrisUserGovernmentIdType, HrisUserShiftsTemplate, HrisUserAccessPermission, HrisUserServicePermission, Service, ServiceFeature, } = require("../models");
+const { HrisUserAccount, HrisUserInfo, HrisUserAddress, HrisUserEmergencyContact, HrisUserEmploymentInfo, HrisUserDesignation, HrisUserSalary, Company, CompanyAddress, CompanyDepartment, CompanyDivision, CompanyInfo, CompanyJobTitle, CompanyIndustry, HrisUserSalaryAdjustmentType, HrisUserJobLevel, HrisUserEmploymentStatus, HrisUserEmploymentType, HrisUserHr201, CompanyOffice, CompanyTeam, HrisUserGovernmentId, HrisUserGovernmentIdType, HrisUserShiftsTemplate, HrisUserAccessPermission, HrisUserServicePermission, Service, ServiceFeature, CompanyEmployer, } = require("../models");
 const sequelize = require("../config/db");
 const { generateUUIV4 } = require("../utils/ids");
 const { buildUserFilters } = require("../utils/filter-builder");
@@ -423,6 +423,86 @@ exports.findAllHrisUserAccounts = async ({
 };
 
 
+//get employees for dropdown
+
+//  {
+//           model: HrisUserDesignation,
+//           attributes: ["upline_id"],
+//           include: [
+//             { 
+//               model: CompanyJobTitle, 
+//               attributes: ["job_title"],
+//               required: false 
+//             },
+//           ],
+//           required: false,
+//         },
+//       ],
+//       order: [
+//         [HrisUserInfo, "last_name", "ASC"],
+//         [HrisUserInfo, "first_name", "ASC"],
+//       ],
+exports.findAllEmployeesForDropdown = async () => {
+  try {
+    const result = await HrisUserAccount.findAll({
+      attributes: ["user_id", "user_email"],
+      include: [
+        {
+          model: HrisUserInfo,
+          attributes: [
+            "first_name",
+            "middle_name",
+            "last_name",
+            "extension_name",
+            "user_pic"
+          ],
+          required: false,
+        },
+        {
+          model: HrisUserDesignation,
+          attributes: ["upline_id"],
+          include: [
+            {
+              model: CompanyJobTitle,
+              attributes: ["job_title"],
+              required: false
+            },
+          ],
+          required: false,
+        },
+      ],
+      order: [
+        [HrisUserInfo, "last_name", "ASC"],
+        [HrisUserInfo, "first_name", "ASC"],
+      ],
+      raw: false,
+    });
+
+    const employees = result.map(user => {
+      const userPlain = user.get({ plain: true });
+
+      const jobTitle = userPlain.HrisUserDesignations?.[0]?.CompanyJobTitle?.job_title || null;
+
+      return {
+        user_id: userPlain.user_id,
+        user_email: userPlain.user_email,
+        first_name: userPlain.HrisUserInfo?.first_name,
+        middle_name: userPlain.HrisUserInfo?.middle_name,
+        last_name: userPlain.HrisUserInfo?.last_name,
+        extension_name: userPlain.HrisUserInfo?.extension_name,
+        user_pic: userPlain.HrisUserInfo?.user_pic,
+        job_title: jobTitle,
+      };
+    });
+
+    return employees;
+
+  } catch (error) {
+    console.error("Error fetching employees for dropdown:", error);
+    throw error;
+  }
+};
+
 
 //get emp count
 // service
@@ -667,6 +747,10 @@ exports.findHrisUserAccount = async (user_id) => {
           },
           {
             model: CompanyOffice,
+          },
+          {
+            model: CompanyEmployer,
+            attributes: ["company_employer_id", "company_employer_name"],
           },
           {
             model: CompanyTeam,
@@ -1458,6 +1542,7 @@ exports.updateDesignation = async (
             include: [{ model: HrisUserInfo }],
           },
           { model: CompanyOffice },
+          { model: CompanyEmployer },
           { model: CompanyTeam },
         ],
         transaction: t,

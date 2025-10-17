@@ -11,7 +11,7 @@ const LogsActivity = sequelize.define(
     },
     service_id: {
       type: DataTypes.CHAR(36),
-      allowNull: false,
+      allowNull: true,
       references: {
         model: 'services',
         key: 'service_id',
@@ -19,7 +19,7 @@ const LogsActivity = sequelize.define(
     },
     company_id: {
       type: DataTypes.CHAR(36),
-      allowNull: false,
+      allowNull: true,
       references: {
         model: 'companies',
         key: 'company_id',
@@ -27,7 +27,7 @@ const LogsActivity = sequelize.define(
     },
     user_id: {
       type: DataTypes.CHAR(36),
-      allowNull: false,
+      allowNull: true,
       references: {
         model: 'hris_user_accounts',
         key: 'user_id',

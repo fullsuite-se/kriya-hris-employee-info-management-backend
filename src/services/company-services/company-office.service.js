@@ -5,7 +5,8 @@ const { generateUUIV4 } = require("../../utils/ids");
 
 exports.findAll = async (company_id) => {
     return await CompanyOffice.findAll({
-        where: { company_id }
+        where: { company_id },
+        order: [['office_name', 'ASC']]
     });
 };
 
@@ -32,7 +33,7 @@ exports.create = async (company_id, office_name, office_address) => {
 exports.update = async (office_id, office_name, office_address) => {
     const office = await CompanyOffice.findByPk(office_id);
 
-    if (!office) throw new Error("No team found");
+    if (!office) throw new Error("No office found");
 
     office.set({
         office_name,

@@ -4,7 +4,8 @@ const { generateUUIV4 } = require("../../utils/ids");
 
 exports.findAll = async (company_id) => {
     return await CompanyDepartment.findAll({
-        where: { company_id }
+        where: { company_id },
+        order: [['department_name', 'ASC']]
     });
 };
 
