@@ -19,6 +19,7 @@ const {
   findAllHrisUserAccounts,
   getEmployeeCounts,
   findAllEmployeesForDropdown,
+  findAllHrisUserAccountViaServiceAccess,
 } = require("../services/user.service");
 const bcryptjs = require("bcryptjs");
 

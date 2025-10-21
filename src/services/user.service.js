@@ -1662,3 +1662,20 @@ exports.updateEmploymentTimeline = async (user_id, updatedFields) => {
   });
 };
 
+exports.findAllHrisUserAccountViaServiceAccess = async (service_id) => {
+  return await HrisUserAccount.findAll({
+    include: [
+      {
+        model: HrisUserInfo,
+        required: true
+      },
+      {
+        model: HrisUserServicePermission,
+        required: true,
+        where: {
+          service_id
+        }
+      }
+    ]
+  });
+};
