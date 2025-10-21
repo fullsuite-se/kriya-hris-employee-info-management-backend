@@ -52,6 +52,24 @@ exports.getHrisUserAccounts = async (req, res) => {
   }
 };
 
+
+exports.getusersWithPayrollAccess = async (req, res) => {
+  const { service_id } = req.params;
+
+  try {
+
+    if (service_id) {
+      const hrisUserAccounts = await findAllHrisUserAccountViaServiceAccess(service_id);
+      return res.status(200).json({ message: "Users retrieved successfully", users: hrisUserAccounts })
+    }
+    const hrisUserAccounts = await findAllHrisUserAccount();
+    res.status(200).json({ message: "Users retrieved successfully", users: hrisUserAccounts })
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch hris user acccounts", error: error.message })
+  }
+}
+
+
 //dropdown
 exports.getEmployeesForDropdown = async (req, res) => {
   try {
