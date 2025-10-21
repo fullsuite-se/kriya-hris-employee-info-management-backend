@@ -1,13 +1,13 @@
-import cron from "node-cron";
-import { v4 as uuidv4 } from "uuid";
-import dayjs from "dayjs";
-import { Op } from "sequelize";
-import sequelize from "../config/db.js";
-import LogsActivity from "../models/log-activity.model.js";
-import HrisUserEmploymentInfo from "../models/hris-user-employment-info.model.js";
-import HrisUserEmploymentStatus from "../models/hris-user-employment-status.model.js";
+const cron = require("node-cron");
+const { v4: uuidv4 } = require("uuid");
+const dayjs = require("dayjs");
+const { Op } = require("sequelize");
+const sequelize = require("../config/db.js");
+const LogsActivity = require("../models/log-activity.model.js");
+const HrisUserEmploymentInfo = require("../models/hris-user-employment-info.model.js");
+const HrisUserEmploymentStatus = require("../models/hris-user-employment-status.model.js");
 
-export const startSeparationJob = () => {
+const startSeparationJob = () => {
     cron.schedule(
         "0 1 * * *",
         async () => {
@@ -76,3 +76,5 @@ export const startSeparationJob = () => {
         { timezone: "Asia/Manila" }
     );
 };
+
+module.exports = { startSeparationJob };

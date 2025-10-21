@@ -1,6 +1,6 @@
-import axios from "axios";
+const axios = require("axios");
 
-export const recaptcha = async (req, res, next) => {
+const recaptcha = async (req, res, next) => {
   const { recaptchaToken } = req.body;
 
   if (!recaptchaToken) {
@@ -53,3 +53,5 @@ export const recaptcha = async (req, res, next) => {
     });
   }
 };
+
+module.exports = { recaptcha };
