@@ -107,9 +107,8 @@ router.patch("/:user_id/salaries/:user_salary_id", hrisUserSalaryController.upda
 //salaries/adjustment-types
 router.post("/salaries/adjustment-types", hrisUserSalaryAdjustmentTypeController.create);
 router.get("/salaries/adjustment-types", hrisUserSalaryAdjustmentTypeController.getAll);
-// router.get('/salaries/adjustment-types/:salary_adjustment_type_id',);
-// router.patch('/salaries/adjustment-types/:salary_adjustment_type_id',);
-// router.delete('/salaries/adjustment-types/:salary_adjustment_type_id',);
+router.patch('/salaries/adjustment-types/:salary_adjustment_type_id', hrisUserSalaryAdjustmentTypeController.update);
+router.delete('/salaries/adjustment-types/:salary_adjustment_type_id', hrisUserSalaryAdjustmentTypeController.delete);
 
 //gov-ids
 router.post("/:user_id/gov-ids", hrisUserGovernmentIdController.create);
@@ -121,9 +120,8 @@ router.delete("/:user_id/gov-ids/:user_government_id", hrisUserGovernmentIdContr
 //gov-ids/types
 router.get("/gov-ids/types", hrisUserGovernmentIdTypeController.getAll);
 router.post("/gov-ids/types", hrisUserGovernmentIdTypeController.create); //adds new id types
-// router.get('gov-ids/types/:government_id_type_id',);
-// router.patch('gov-ids/types/:government_id_type_id',);
-// router.delete('gov-ids/types/:government_id_type_id',);
+router.patch('/gov-ids/types/:government_id_type_id', hrisUserGovernmentIdTypeController.update);
+router.delete('/gov-ids/types/:government_id_type_id', hrisUserGovernmentIdTypeController.delete);
 
 // //hr201
 router.get("/:user_id/hr201", hrisUserHr201Controller.getOne);

@@ -28,7 +28,7 @@ exports.create = async (req, res) => {
     if ([company_employer_name].some(v => !v)) return res.status(400).json({ message: "The client sent a malformed or incomplete request" });
 
     try {
-        const company_employer = await companyEmployerService.create(company_employer_id, company_employer_name);
+        const company_employer = await companyEmployerService.create(company_employer_name);
         return res.status(201).json({ message: "created successfully", company_employer });
     } catch (error) {
         return res.status(400).json({ error: error.message });
@@ -36,8 +36,8 @@ exports.create = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
-    const { company_employer_id, company_employer_name } = req.body;
-
+    const { company_employer_id } = req.params;
+    const { company_employer_name } = req.body;
     if ([company_employer_id, company_employer_name].some(v => !v)) return res.status(400).json({ message: "The client sent a malformed or incomplete request" });
 
     try {

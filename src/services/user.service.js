@@ -1598,13 +1598,45 @@ exports.updateDesignation = async (
     return { designation: updatedDesignation, employment: updatedEmployment };
   });
 };
-
 exports.updateEmploymentTimeline = async (user_id, updatedFields) => {
   console.log("Updating user_id:", user_id);
+
   const record = await HrisUserEmploymentInfo.findOne({ where: { user_id } });
-  console.log("Found record before update:", record);
+  if (!record) return null;
+
+  const today = new Date();
+
+  let newStatusId = null; // we'll store UUID FK here
+
+  const hasSeparation = !!updatedFields.date_separated;
+  const hasRegularization = !!updatedFields.date_regularization;
+
+  const sepDate = hasSeparation ? new Date(updatedFields.date_separated) : null;
+  const regDate = hasRegularization ? new Date(updatedFields.date_regularization) : null;
+
+  // === DATE SEPARATED RULE (same as before) ===
+  if (hasSeparation && sepDate <= today) {
+    const status = await HrisUserEmploymentStatus.findOne({
+      where: { employment_status: "separated" },
+    });
+    if (status) newStatusId = status.employment_status_id;
+  }
+
+  // === DATE REGULARIZATION RULE (new condition added)
+  // Only set regular IF separated date is:
+  // - not provided, OR
+  // - is in the future
+  if (!newStatusId && hasRegularization && regDate <= today) {
+    if (!sepDate || sepDate > today) {
+      const status = await HrisUserEmploymentStatus.findOne({
+        where: { employment_status: "regular" },
+      });
+      if (status) newStatusId = status.employment_status_id;
+    }
+  }
 
   return await sequelize.transaction(async (t) => {
+    // 1) Update employment timeline fields
     const [rowsUpdated] = await HrisUserEmploymentInfo.update(updatedFields, {
       where: { user_id },
       transaction: t,
@@ -1612,6 +1644,15 @@ exports.updateEmploymentTimeline = async (user_id, updatedFields) => {
 
     if (rowsUpdated === 0) return null;
 
+    // 2) If status should change, update FK
+    if (newStatusId) {
+      await HrisUserEmploymentInfo.update(
+        { employment_status_id: newStatusId },
+        { where: { user_id }, transaction: t }
+      );
+    }
+
+    // 3) Return updated record
     const updatedEmploymentTimeline = await HrisUserEmploymentInfo.findOne({
       where: { user_id },
       transaction: t,
@@ -1620,5 +1661,4 @@ exports.updateEmploymentTimeline = async (user_id, updatedFields) => {
     return updatedEmploymentTimeline;
   });
 };
-
 

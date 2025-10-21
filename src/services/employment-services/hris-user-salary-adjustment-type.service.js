@@ -1,5 +1,5 @@
 const { HrisUserSalaryAdjustmentType } = require("../../models");
-const { getCreatedUpdatedIsoUTCNow } = require("../../utils/date");
+const { getCreatedUpdatedIsoUTCNow, getIsoUTCNow } = require("../../utils/date");
 const { generateUUIV4 } = require("../../utils/ids");
 
 exports.findAll = async () => {
@@ -18,3 +18,30 @@ exports.create = async (salary_adjustment_type) => {
         updated_at
     });
 }
+
+
+
+
+exports.update = async (salary_adjustment_type_id, salary_adjustment_type) => {
+    const adjustment = await HrisUserSalaryAdjustmentType.findByPk(salary_adjustment_type_id);
+
+    if (!adjustment) throw new Error('salary_adjustment_type not found');
+
+    adjustment.set({
+        salary_adjustment_type,
+        updated_at: getIsoUTCNow(),
+    });
+
+    await adjustment.save();
+    return adjustment;
+};
+
+
+
+exports.delete = async (salary_adjustment_type_id) => {
+    const adjustment = await HrisUserSalaryAdjustmentType.findByPk(salary_adjustment_type_id);
+    if (!adjustment) throw new Error('salary_adjustment_type not found');
+
+    await adjustment.destroy();
+    return adjustment;
+};

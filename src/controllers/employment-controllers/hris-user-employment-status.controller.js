@@ -39,6 +39,8 @@ exports.delete = async (req, res) => {
     const { employment_status_id } = req.params;
 
     try {
+    console.log("employment_status_id:::::::", employment_status_id);
+
         const status = await hrisUserEmploymentStatusService.delete(employment_status_id);
         return res.status(200).json({ message: "Deleted successfully", status })
     } catch (error) {
