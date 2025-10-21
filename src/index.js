@@ -2,9 +2,11 @@ const app = require("./app");
 
 if (require.main === module) {
     const env = require("./config/env");
-    app.listen(env.VITE_FRONTEND_PORT, () => {
+
+    const PORT = process.env.PORT || env.VITE_FRONTEND_PORT;
+    app.listen(PORT, () => {
         console.log(
-            `HRIS Employee Management running on port: ${env.VITE_FRONTEND_PORT}`
+            `HRIS Employee Management running on port: ${PORT}`
         );
     });
 }
