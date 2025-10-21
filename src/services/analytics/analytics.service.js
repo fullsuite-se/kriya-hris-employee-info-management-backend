@@ -1,0 +1,136 @@
+const { Op, Sequelize } = require('sequelize');
+const { HrisUserEmploymentInfo } = require('../../models');
+
+exports.getMonthlyTrends = async (year = null) => {
+    const targetYear = year || new Date().getFullYear();
+
+    try {
+        const hiringTrends = await fetchHiringTrends(targetYear);
+        const separationTrends = await fetchSeparationTrends(targetYear);
+
+        return formatMonthlyData(hiringTrends, separationTrends, targetYear);
+    } catch (error) {
+        throw new Error(`Failed to fetch monthly trends: ${error.message}`);
+    }
+};
+
+exports.getAvailableYears = async () => {
+    try {
+        const hiringYears = await fetchHiringYears();
+        const separationYears = await fetchSeparationYears();
+
+        const allYears = [
+            ...hiringYears.map(y => y.year),
+            ...separationYears.map(y => y.year)
+        ].filter(year => year !== null);
+
+        return [...new Set(allYears)].sort((a, b) => b - a);
+    } catch (error) {
+        throw new Error(`Failed to fetch available years: ${error.message}`);
+    }
+};
+
+const fetchHiringTrends = async (targetYear) => {
+    return await HrisUserEmploymentInfo.findAll({
+        attributes: [
+            [Sequelize.fn('MONTH', Sequelize.col('date_hired')), 'month'],
+            [Sequelize.fn('COUNT', Sequelize.col('user_employment_info_id')), 'count']
+        ],
+        where: {
+            date_hired: {
+                [Op.and]: [
+                    Sequelize.where(Sequelize.fn('YEAR', Sequelize.col('date_hired')), targetYear),
+                    { [Op.ne]: null }
+                ]
+            }
+        },
+        group: [Sequelize.fn('MONTH', Sequelize.col('date_hired'))],
+        order: [[Sequelize.fn('MONTH', Sequelize.col('date_hired')), 'ASC']],
+        raw: true
+    });
+}
+
+const fetchSeparationTrends = async (targetYear) => {
+    return await HrisUserEmploymentInfo.findAll({
+        attributes: [
+            [Sequelize.fn('MONTH', Sequelize.col('date_separated')), 'month'],
+            [Sequelize.fn('COUNT', Sequelize.col('user_employment_info_id')), 'count']
+        ],
+        where: {
+            date_separated: {
+                [Op.and]: [
+                    Sequelize.where(Sequelize.fn('YEAR', Sequelize.col('date_separated')), targetYear),
+                    { [Op.ne]: null }
+                ]
+            }
+        },
+        group: [Sequelize.fn('MONTH', Sequelize.col('date_separated'))],
+        order: [[Sequelize.fn('MONTH', Sequelize.col('date_separated')), 'ASC']],
+        raw: true
+    });
+}
+
+const fetchHiringYears = async () => {
+    return await HrisUserEmploymentInfo.findAll({
+        attributes: [
+            [Sequelize.fn('DISTINCT', Sequelize.fn('YEAR', Sequelize.col('date_hired'))), 'year']
+        ],
+        where: { date_hired: { [Op.ne]: null } },
+        order: [[Sequelize.fn('YEAR', Sequelize.col('date_hired')), 'DESC']],
+        raw: true
+    });
+}
+
+const fetchSeparationYears = async () => {
+    return await HrisUserEmploymentInfo.findAll({
+        attributes: [
+            [Sequelize.fn('DISTINCT', Sequelize.fn('YEAR', Sequelize.col('date_separated'))), 'year']
+        ],
+        where: { date_separated: { [Op.ne]: null } },
+        order: [[Sequelize.fn('YEAR', Sequelize.col('date_separated')), 'DESC']],
+        raw: true
+    });
+}
+
+const formatMonthlyData = (hiringData, separationData, year) => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const newHires = Array(12).fill(0);
+    const separations = Array(12).fill(0);
+
+    hiringData.forEach(item => {
+        const index = item.month - 1;
+        if (index >= 0 && index < 12) newHires[index] = parseInt(item.count);
+    });
+
+    separationData.forEach(item => {
+        const index = item.month - 1;
+        if (index >= 0 && index < 12) separations[index] = parseInt(item.count);
+    });
+
+    return {
+        labels: months,
+        datasets: [
+            {
+                label: 'New Employees',
+                data: newHires,
+                borderColor: '#008080',
+                backgroundColor: 'rgba(0,128,128,0.2)',
+                pointBackgroundColor: '#008080',
+                pointBorderColor: '#fff',
+                pointRadius: 5,
+                fill: true
+            },
+            {
+                label: 'Resigned Employees',
+                data: separations,
+                borderColor: '#cc5500',
+                backgroundColor: 'rgba(204,85,0,0.2)',
+                pointBackgroundColor: '#cc5500',
+                pointBorderColor: '#fff',
+                pointRadius: 5,
+                fill: true
+            }
+        ],
+        year
+    };
+}
