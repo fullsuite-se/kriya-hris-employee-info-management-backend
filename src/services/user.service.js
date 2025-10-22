@@ -5,216 +5,6 @@ const { generateUUIV4 } = require("../utils/ids");
 const { buildUserFilters } = require("../utils/filter-builder");
 
 
-// service
-
-// exports.findAllHrisUserAccounts = async ({
-//   search,
-//   filters = {},
-//   page = 1,
-//   limit = 10,
-// } = {}) => {
-//   const offset = (page - 1) * limit;
-
-//   const {
-//     whereAccount,
-//     whereEmploymentInfo,
-//     whereDesignation,
-//     whereInfo,
-//   } = buildUserFilters(filters);
-
-//   // Build the base query options
-//   const queryOptions = {
-//     attributes: ["user_id", "user_email"],
-//     include: [
-//       {
-//         model: HrisUserInfo,
-//         attributes: [
-//           "first_name",
-//           "middle_name",
-//           "last_name",
-//           "extension_name",
-//         ],
-//         where: Object.keys(whereInfo).length ? whereInfo : {},
-//         required: !!Object.keys(whereInfo).length,
-//       },
-//       {
-//         model: HrisUserEmploymentInfo,
-//         attributes: ["date_hired", "date_regularization"],
-//         include: [
-//           {
-//             model: HrisUserEmploymentStatus,
-//             attributes: ["employment_status"],
-//           },
-//         ],
-//         where: Object.keys(whereEmploymentInfo).length
-//           ? whereEmploymentInfo
-//           : {},
-//         required: !!Object.keys(whereEmploymentInfo).length,
-//       },
-//       {
-//         model: HrisUserDesignation,
-//         attributes: ["upline_id"],
-//         include: [
-//           { model: CompanyJobTitle, attributes: ["job_title"] },
-//           { model: CompanyDepartment, attributes: ["department_name"] },
-//         ],
-//         where: Object.keys(whereDesignation).length ? whereDesignation : {},
-//         required: !!Object.keys(whereDesignation).length,
-//       },
-//     ],
-//     where: Object.keys(whereAccount).length ? whereAccount : {},
-//     limit,
-//     offset,
-//     distinct: true,
-//     subQuery: false,
-//     order: [
-//       [HrisUserInfo, 'last_name', 'ASC'],
-//       [HrisUserInfo, 'first_name', 'ASC'],
-//       [HrisUserInfo, 'middle_name', 'ASC']
-//     ],
-//   };
-
-//   // Add search functionality
-//   if (search && search.trim() !== "") {
-//     const searchTerm = `%${search}%`;
-//     const searchWords = search.trim().split(/\s+/).filter(word => word.length > 0);
-//     const searchWordCount = searchWords.length;
-
-//     // Create search conditions for the main table
-//     const accountSearchConditions = {
-//       [Op.or]: [
-//         { user_id: { [Op.like]: searchTerm } },
-//         { user_email: { [Op.like]: searchTerm } }
-//       ]
-//     };
-
-//     // Prepare replacements object
-//     const replacements = { searchTerm: searchTerm };
-
-//     // Build the complex search conditions for names
-//     let nameSearchConditions = `
-//       -- Individual field searches
-//       hris_user_infos.first_name LIKE :searchTerm OR
-//       hris_user_infos.middle_name LIKE :searchTerm OR
-//       hris_user_infos.last_name LIKE :searchTerm OR
-//       hris_user_infos.extension_name LIKE :searchTerm OR
-
-//       -- Combined name searches
-//       CONCAT(hris_user_infos.first_name, ' ', hris_user_infos.last_name) LIKE :searchTerm OR
-//       CONCAT(hris_user_infos.last_name, ', ', hris_user_infos.first_name) LIKE :searchTerm OR
-//       CONCAT(hris_user_infos.first_name, ' ', COALESCE(hris_user_infos.middle_name, ''), ' ', hris_user_infos.last_name) LIKE :searchTerm OR
-//       CONCAT(hris_user_infos.last_name, ', ', hris_user_infos.first_name, ' ', COALESCE(hris_user_infos.middle_name, '')) LIKE :searchTerm OR
-
-//       -- Reverse order searches
-//       CONCAT(hris_user_infos.last_name, ' ', hris_user_infos.first_name) LIKE :searchTerm
-//     `;
-
-//     // Handle multi-word searches for complex name patterns
-//     if (searchWordCount > 1) {
-//       // Add conditions for first name containing multiple words
-//       nameSearchConditions += `
-//         OR (
-//           -- Match when search terms are all in first name (e.g., "Mae Ann" in first_name)
-//           hris_user_infos.first_name LIKE :searchTerm
-//         )
-//         OR (
-//           -- Match when some words are in first name and some in last name
-//           hris_user_infos.first_name LIKE :firstWords AND
-//           hris_user_infos.last_name LIKE :lastWord
-//         )
-//         OR (
-//           -- Match when some words are in last name and some in first name  
-//           hris_user_infos.last_name LIKE :firstWords AND
-//           hris_user_infos.first_name LIKE :lastWord
-//         )
-//       `;
-
-//       // Add replacements for multi-word patterns
-//       const firstWords = searchWords.slice(0, -1).join(' ');
-//       const lastWord = searchWords[searchWordCount - 1];
-
-//       replacements.firstWords = `%${firstWords}%`;
-//       replacements.lastWord = `%${lastWord}%`;
-
-//       // Handle three or more word searches for middle name inclusion
-//       if (searchWordCount > 2) {
-//         nameSearchConditions += `
-//           OR (
-//             -- Match pattern: first_name middle_name last_name (e.g., "Mae Ann Santos")
-//             hris_user_infos.first_name LIKE :firstWord AND
-//             hris_user_infos.middle_name LIKE :middleWords AND
-//             hris_user_infos.last_name LIKE :lastWord
-//           )
-//           OR (
-//             -- Match pattern: first_name last_name with multi-word first name (e.g., "Mae Ann" in first_name + "Santos" in last_name)
-//             hris_user_infos.first_name LIKE :multiWordFirst AND
-//             hris_user_infos.last_name LIKE :lastWord
-//           )
-//         `;
-
-//         const firstWord = searchWords[0];
-//         const middleWords = searchWords.slice(1, -1).join(' ');
-//         const multiWordFirst = searchWords.slice(0, -1).join(' ');
-
-//         replacements.firstWord = `%${firstWord}%`;
-//         replacements.middleWords = `%${middleWords}%`;
-//         replacements.multiWordFirst = `%${multiWordFirst}%`;
-//       }
-
-//       // Add flexible word-by-word matching
-//       nameSearchConditions += `
-//         OR (
-//           -- Flexible matching: any combination of words across fields
-//           (hris_user_infos.first_name LIKE :word1 AND hris_user_infos.last_name LIKE :word2)
-//           OR (hris_user_infos.last_name LIKE :word1 AND hris_user_infos.first_name LIKE :word2)
-//       `;
-
-//       // Add individual word replacements
-//       searchWords.forEach((word, index) => {
-//         replacements[`word${index + 1}`] = `%${word}%`;
-//       });
-
-//       // Add middle name to flexible matching for 3+ words
-//       if (searchWordCount > 2) {
-//         nameSearchConditions += `
-//           OR (hris_user_infos.first_name LIKE :word1 AND hris_user_infos.middle_name LIKE :word2 AND hris_user_infos.last_name LIKE :word3)
-//           OR (hris_user_infos.first_name LIKE :word1 AND hris_user_infos.last_name LIKE :word2 AND hris_user_infos.middle_name LIKE :word3)
-//         `;
-//       }
-
-//       nameSearchConditions += `)`;
-//     }
-
-//     // Apply search conditions to the main query
-//     queryOptions.where = {
-//       ...queryOptions.where,
-//       [Op.or]: [
-//         accountSearchConditions,
-//         sequelize.literal(`EXISTS (
-//           SELECT 1 FROM hris_user_infos 
-//           WHERE hris_user_infos.user_id = HrisUserAccount.user_id 
-//           AND (${nameSearchConditions})
-//         )`)
-//       ]
-//     };
-
-//     // Add replacements for the literal query
-//     queryOptions.replacements = replacements;
-
-//     // Make sure HrisUserInfo is required when searching by user info fields
-//     const infoIncludeIndex = queryOptions.include.findIndex(
-//       include => include.model === HrisUserInfo
-//     );
-
-//     if (infoIncludeIndex !== -1) {
-//       queryOptions.include[infoIncludeIndex].required = true;
-//     }
-//   }
-
-//   return await HrisUserAccount.findAndCountAll(queryOptions);
-// };
-
-//2
 
 exports.findAllHrisUserAccounts = async ({
   search,
@@ -231,7 +21,6 @@ exports.findAllHrisUserAccounts = async ({
     whereInfo,
   } = buildUserFilters(filters);
 
-  // Base query
   const queryOptions = {
     attributes: ["user_id", "user_email"],
     include: [
@@ -284,7 +73,6 @@ exports.findAllHrisUserAccounts = async ({
     ],
   };
 
-  // 🔎 Search logic (keep exactly as in your working code)
   if (search && search.trim() !== "") {
     const searchTerm = `%${search}%`;
     const searchWords = search.trim().split(/\s+/).filter((word) => word.length > 0);
@@ -396,10 +184,8 @@ exports.findAllHrisUserAccounts = async ({
     }
   }
 
-  // 📌 Fetch users
   const result = await HrisUserAccount.findAndCountAll(queryOptions);
 
-  // 📌 Attach haveAccess flag
   const userIds = result.rows.map((user) => user.user_id);
 
   const permissions = await HrisUserServicePermission.findAll({
@@ -422,26 +208,7 @@ exports.findAllHrisUserAccounts = async ({
   };
 };
 
-
-//get employees for dropdown
-
-//  {
-//           model: HrisUserDesignation,
-//           attributes: ["upline_id"],
-//           include: [
-//             { 
-//               model: CompanyJobTitle, 
-//               attributes: ["job_title"],
-//               required: false 
-//             },
-//           ],
-//           required: false,
-//         },
-//       ],
-//       order: [
-//         [HrisUserInfo, "last_name", "ASC"],
-//         [HrisUserInfo, "first_name", "ASC"],
-//       ],
+//get all employees for dropdown
 exports.findAllEmployeesForDropdown = async () => {
   try {
     const result = await HrisUserAccount.findAll({

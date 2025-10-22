@@ -25,16 +25,13 @@ const bcryptjs = require("bcryptjs");
 //pagination w search
 exports.getHrisUserAccounts = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search, ...filters } = req.query;
-
-
+    const { page = 1, pageSize = 10, search, ...filters } = req.query;
 
     const { count, rows } = await findAllHrisUserAccounts({
-
       filters,
       search,
       page: Number(page),
-      limit: Number(limit),
+      limit: Number(pageSize),
     });
 
     return res.status(200).json({
@@ -42,7 +39,8 @@ exports.getHrisUserAccounts = async (req, res) => {
       users: rows,
       total: count,
       page: Number(page),
-      totalPages: Math.ceil(count / limit),
+      totalPages: Math.ceil(count / pageSize),
+      limit: Number(pageSize),
     });
   } catch (error) {
     res.status(500).json({

@@ -83,7 +83,6 @@ exports.getUsersWithPermissions = async (req, res) => {
     const serviceIds = service_ids ? JSON.parse(service_ids) : null;
     const serviceFeatureIds = service_feature_ids ? JSON.parse(service_feature_ids) : null;
 
-    // Set default pagination
     page = parseInt(page) || 1;
     limit = parseInt(limit) || 10;
     const offset = (page - 1) * limit;
@@ -92,14 +91,14 @@ exports.getUsersWithPermissions = async (req, res) => {
       serviceIds,
       serviceFeatureIds,
       { offset, limit },
-      searchFilter // Pass search filter to service
+      searchFilter 
     );
 
     return res.status(200).json({
       message: "Users with permissions retrieved successfully",
       users,
       pagination: { page, limit, total: counts.length },
-      ...counts, // include counts (allCount + per-service counts)
+      ...counts, 
     });
   } catch (error) {
     console.error("getUsersWithPermissions error:", error);
