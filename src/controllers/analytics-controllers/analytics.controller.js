@@ -37,3 +37,59 @@ exports.getAvailableYears = async (req, res) => {
         });
     }
 };
+
+exports.getAttritionRate = async (req, res) => {
+    try {
+        const { year } = req.query;
+
+        const rates = await analyticsService.getAttritionRate(
+            year ? parseInt(year) : null
+        );
+
+        return res.json({
+            success: true,
+            data: rates
+        });
+    } catch (error) {
+        console.error("Error in getAttritionRate:", error);
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+
+exports.getSexDistribution = async (req, res) => {
+    try {
+        const data = await analyticsService.getSexDistribution();
+
+        return res.status(200).json({
+            success: true,
+            data
+        });
+    } catch (error) {
+        console.error("Error fetching gender distribution:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch gender distribution"
+        });
+    }
+};
+
+exports.getAgeDistribution = async (req, res) => {
+    try {
+        const data = await analyticsService.getAgeDistribution();
+
+        return res.status(200).json({
+            success: true,
+            data
+        });
+    } catch (error) {
+        console.error("Error fetching age distribution:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch age distribution"
+        });
+    }
+};

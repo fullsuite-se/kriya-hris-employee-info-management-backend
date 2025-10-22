@@ -4,5 +4,8 @@ const router = express.Router();
 
 router.get('/monthly-trends', analyticsController.getMonthlyTrends);
 router.get('/available-years', analyticsController.getAvailableYears);
+router.get('/attrition-rate', analyticsController.getAttritionRate);
+router.get('/sex-distribution', analyticsController.getSexDistribution);
+router.get('/age-distribution', analyticsController.getAgeDistribution);
 
 module.exports = router;
