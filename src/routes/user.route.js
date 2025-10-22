@@ -31,6 +31,7 @@ const { recaptcha } = require("../middleware/recaptcha.middleware");
  * **/
 
 router.get('/', authenticateJWTToken, userController.getHrisUserAccounts);
+router.get('/users-payroll/:service_id', authenticateJWTToken, userController.getusersWithPayrollAccess);
 // router.get('/', authenticateJWTToken, checkAuthorizationToAccessFeature([env.EMPLOYEE_MANAGEMENT]), userController.getHrisUserAccounts);
 router.post('/', recaptcha, authenticateJWTToken, userController.createHrisUserAccount);
 router.get("/employee-counts", authenticateJWTToken, userController.getEmployeeCounts);
