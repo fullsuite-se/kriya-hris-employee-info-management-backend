@@ -7,46 +7,49 @@ const LogsActivity = require("../models/log-activity.model.js");
 const HrisUserEmploymentInfo = require("../models/hris-user-employment-info.model.js");
 const HrisUserEmploymentStatus = require("../models/hris-user-employment-status.model.js");
 
-const startSeparationJob = () => {
+
+const startProbationaryCheckJob = () => {
     cron.schedule(
-        "10 0 * * *",
+        "20 0 * * *",
         async () => {
             const today = dayjs().format("YYYY-MM-DD");
-            console.log(`[Cron] Running separation check for ${today}`);
+            console.log(`[Cron] Running probationary check for ${today}`);
 
             const transaction = await sequelize.transaction();
 
             try {
-                const separatedStatus = await HrisUserEmploymentStatus.findOne({
-                    where: { employment_status: "Separated" },
+                const probationaryStatus = await HrisUserEmploymentStatus.findOne({
+                    where: { employment_status: "Probationary" },
                     transaction,
                 });
 
-                if (!separatedStatus) {
-                    console.error("[Cron] 'Separated' status not found!");
+                if (!probationaryStatus) {
+                    console.error("[Cron] Missing 'Probationary' status record!");
                     await transaction.rollback();
                     return;
                 }
 
-                const separatedStatusId = separatedStatus.employment_status_id;
+                const probationaryStatusId = probationaryStatus.employment_status_id;
 
-                const employeesToSeparate = await HrisUserEmploymentInfo.findAll({
+                const employeesToProbation = await HrisUserEmploymentInfo.findAll({
                     where: {
-                        date_separated: { [Op.lte]: today },
-                        employment_status_id: { [Op.ne]: separatedStatusId },
+                        date_regularization: { [Op.gt]: today },
+                        employment_status_id: { [Op.not]: probationaryStatusId },
+                        date_offboarding: null,
+                        date_separated: null,
                     },
                     transaction,
                 });
 
-                if (!employeesToSeparate.length) {
-                    console.log("[Cron] No employees to mark as separated today or earlier.");
+                if (!employeesToProbation.length) {
+                    console.log("[Cron] No employees to set as probationary.");
                     await transaction.commit();
                     return;
                 }
 
-                for (const emp of employeesToSeparate) {
+                for (const emp of employeesToProbation) {
                     await emp.update(
-                        { employment_status_id: separatedStatusId },
+                        { employment_status_id: probationaryStatusId },
                         { transaction }
                     );
 
@@ -57,7 +60,7 @@ const startSeparationJob = () => {
                             company_id: "c1",
                             user_id: emp.user_id || null,
                             action: "Employment Status Update",
-                            description: `Automatically changed status to 'Separated' for employee ${emp.user_id}`,
+                            description: `Automatically changed status to 'Probationary' for employee ${emp.user_id} (regularization date in the future)`,
                             created_at: new Date(),
                         },
                         { transaction }
@@ -66,15 +69,15 @@ const startSeparationJob = () => {
 
                 await transaction.commit();
                 console.log(
-                    `[Cron] Marked ${employeesToSeparate.length} employee(s) as Separated.`
+                    `[Cron] Successfully updated ${employeesToProbation.length} employee(s) to Probationary.`
                 );
             } catch (error) {
                 await transaction.rollback();
-                console.error("[Cron] Error in separation job:", error);
+                console.error("[Cron] Error in probationary check job:", error);
             }
         },
         { timezone: "Asia/Manila" }
     );
 };
 
-module.exports = { startSeparationJob };
+module.exports = { startProbationaryCheckJob };

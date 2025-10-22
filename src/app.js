@@ -6,6 +6,7 @@ const routes = require("./routes");
 const env = require("./config/env");
 const { startRegularizationJob } = require("./cron/employment-regularization.cron");
 const { startSeparationJob } = require("./cron/employment-separated.cron");
+const { startProbationaryCheckJob } = require("./cron/employment-probationary.cron");
 
 
 app.use(cors({
@@ -26,6 +27,7 @@ console.log("Allowed origins:", [
 
 startRegularizationJob();
 startSeparationJob();
+startProbationaryCheckJob();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
