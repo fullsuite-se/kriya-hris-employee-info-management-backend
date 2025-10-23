@@ -21,6 +21,7 @@ console.log("Allowed origins:", [
     env.VITE_FRONTEND_PAYROLL_URL_PRODUCTION,
     env.VITE_FRONTEND_URL_DEVELOPMENT_SL,
     env.VITE_FRONTEND_URL_PRODUCTION_SL,
+    env.VITE_BACKEND_URL_PRODUCTION_SL,
     "https://kriya-hris.vercel.app",
 ]);
 
