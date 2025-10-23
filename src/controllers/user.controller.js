@@ -20,6 +20,7 @@ const {
   getEmployeeCounts,
   findAllEmployeesForDropdown,
   findAllHrisUserAccountViaServiceAccess,
+  isEmailTaken,
 } = require("../services/user.service");
 const bcryptjs = require("bcryptjs");
 
@@ -459,6 +460,27 @@ exports.checkUserIdAvailability = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: "Failed to check user ID availability",
+      error: error.message,
+    });
+  }
+};
+
+
+
+exports.checkEmailAvailability = async (req, res) => {
+  const { user_email } = req.params;
+
+  try {
+    const isTaken = await isEmailTaken(user_email);
+    res.status(200).json({
+      available: !isTaken,
+      message: isTaken
+        ? "Email already taken"
+        : "Email is available",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to check email availability",
       error: error.message,
     });
   }

@@ -43,6 +43,8 @@ router.get('/:user_id', authenticateJWTToken, userController.getHrisUserAccount)
 
 //checking id
 router.get("/check-id/:user_id", authenticateJWTToken, userController.checkUserIdAvailability);
+//checking email
+router.get("/check-email/:user_email", authenticateJWTToken, userController.checkEmailAvailability);
 //getting latest id
 router.get("/latest-id/get", authenticateJWTToken, userController.getLatestId);
 //personal details UPDATE

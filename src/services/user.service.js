@@ -741,6 +741,16 @@ exports.isUserIdTaken = async (user_id) => {
   return !!existingUser;
 };
 
+
+
+exports.isEmailTaken = async (user_email) => {
+  const existingUser = await HrisUserAccount.findOne({
+    where: { user_email },
+    attributes: ["user_email"],
+  });
+  return !!existingUser;
+};
+
 exports.getLatestId = async () => {
   const latestUser = await HrisUserAccount.findOne({
     attributes: ["user_id"],
