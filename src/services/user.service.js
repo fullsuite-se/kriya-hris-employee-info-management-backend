@@ -272,169 +272,72 @@ exports.findAllEmployeesForDropdown = async () => {
 
 
 //get emp count
-// service
 exports.getEmployeeCounts = async () => {
   const phNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" }));
-
   const startOfMonth = new Date(phNow.getFullYear(), phNow.getMonth(), 1);
   const startOfNextMonth = new Date(phNow.getFullYear(), phNow.getMonth() + 1, 1);
 
-  // Get all employment statuses
+  // Fetch all statuses
   const allStatuses = await HrisUserEmploymentStatus.findAll({
     attributes: ["employment_status_id", "employment_status"],
     raw: true,
+    order: [['employment_status', 'ASC']],
   });
 
-  const [
-    countsByStatusRaw,
-    activeCountResult,
-    newHiresByStatusRaw,
-    newSeparatedByStatusRaw,
-    newRegularsRaw,
-  ] = await Promise.all([
-    // Counts by status (all employees)
-    HrisUserEmploymentInfo.findAll({
-      attributes: [
-        "employment_status_id",
-        [sequelize.fn("COUNT", sequelize.col("*")), "count"],
-      ],
-      include: [{ model: HrisUserEmploymentStatus, attributes: [], required: true }],
-      group: ["employment_status_id"],
-      raw: true,
-    }),
 
-    // Active count (not offboarded or separated)
-    HrisUserEmploymentInfo.count({
-      where: { date_offboarding: null, date_separated: null },
-    }),
+  // Single query
+  const countsRaw = await HrisUserEmploymentInfo.findAll({
+    attributes: [
+      "employment_status_id",
+      [sequelize.fn("COUNT", sequelize.col("*")), "totalCount"],
+      [sequelize.fn("SUM", sequelize.literal(`CASE WHEN date_offboarding IS NULL AND date_separated IS NULL THEN 1 ELSE 0 END`)), "activeCount"],
+      [sequelize.fn("SUM", sequelize.literal(`CASE WHEN date_hired >= '${startOfMonth.toISOString().slice(0, 10)}' AND date_hired < '${startOfNextMonth.toISOString().slice(0, 10)}' THEN 1 ELSE 0 END`)), "newHiresThisMonth"],
+      [sequelize.fn("SUM", sequelize.literal(`CASE WHEN date_separated >= '${startOfMonth.toISOString().slice(0, 10)}' AND date_separated < '${startOfNextMonth.toISOString().slice(0, 10)}' THEN 1 ELSE 0 END`)), "newSeparatedThisMonth"],
+      [sequelize.fn("SUM", sequelize.literal(`CASE WHEN date_regularization >= '${startOfMonth.toISOString().slice(0, 10)}' AND date_regularization < '${startOfNextMonth.toISOString().slice(0, 10)}' THEN 1 ELSE 0 END`)), "newRegularThisMonth"]
+    ],
+    group: ["employment_status_id"],
+    raw: true,
+  });
 
-    // New hires by status this month
-    HrisUserEmploymentInfo.findAll({
-      attributes: [
-        "employment_status_id",
-        [sequelize.fn("COUNT", sequelize.col("*")), "newHiresThisMonth"],
-      ],
-      include: [{ model: HrisUserEmploymentStatus, attributes: [], required: true }],
-      where: {
-        date_hired: {
-          [Op.gte]: startOfMonth,
-          [Op.lt]: startOfNextMonth,
-        },
-      },
-      group: ["employment_status_id"],
-      raw: true,
-    }),
-
-    // New separations by status this month
-    HrisUserEmploymentInfo.findAll({
-      attributes: [
-        "employment_status_id",
-        [sequelize.fn("COUNT", sequelize.col("*")), "newSeparatedThisMonth"],
-      ],
-      include: [{ model: HrisUserEmploymentStatus, attributes: [], required: true }],
-      where: {
-        date_separated: {
-          [Op.gte]: startOfMonth,
-          [Op.lt]: startOfNextMonth,
-        },
-      },
-      group: ["employment_status_id"],
-      raw: true,
-    }),
-
-    // Regularizations this month
-    HrisUserEmploymentInfo.findAll({
-      attributes: [
-        "employment_status_id",
-        [sequelize.fn("COUNT", sequelize.col("*")), "newRegularThisMonth"],
-      ],
-      include: [
-        { model: HrisUserEmploymentStatus, attributes: [], required: true },
-      ],
-      where: {
-        date_regularization: {
-          [Op.gte]: startOfMonth,
-          [Op.lt]: startOfNextMonth,
-        },
-      },
-      group: ["employment_status_id"],
-      raw: true,
-    }),
-  ]);
-
-  // Merge counts into statuses
-  const mergeCountsWithStatuses = (
-    allCountsData,
-    newHiresData,
-    newSeparatedData,
-    newRegularsData,
-    allStatuses
-  ) => {
-    const allCounts = allCountsData.map((item) => ({
-      employment_status_id: item.employment_status_id,
-      count: parseInt(item.count),
-    }));
-
-    const newHiresCounts = newHiresData.map((item) => ({
-      employment_status_id: item.employment_status_id,
+  // Convert raw counts to a map for fast lookup
+  const countsMap = countsRaw.reduce((acc, item) => {
+    acc[item.employment_status_id] = {
+      count: parseInt(item.totalCount),
+      activeCount: parseInt(item.activeCount),
       newHiresThisMonth: parseInt(item.newHiresThisMonth),
-    }));
-
-    const newSeparatedCounts = newSeparatedData.map((item) => ({
-      employment_status_id: item.employment_status_id,
       newSeparatedThisMonth: parseInt(item.newSeparatedThisMonth),
-    }));
-
-    const newRegularsCounts = newRegularsData.map((item) => ({
-      employment_status_id: item.employment_status_id,
       newRegularThisMonth: parseInt(item.newRegularThisMonth),
-    }));
+    };
+    return acc;
+  }, {});
 
-    return allStatuses.map((status) => {
-      const foundAllCount = allCounts.find(
-        (item) => item.employment_status_id === status.employment_status_id
-      );
-      const foundNewHires = newHiresCounts.find(
-        (item) => item.employment_status_id === status.employment_status_id
-      );
-      const foundNewSeparated = newSeparatedCounts.find(
-        (item) => item.employment_status_id === status.employment_status_id
-      );
-      const foundNewRegulars = newRegularsCounts.find(
-        (item) => item.employment_status_id === status.employment_status_id
-      );
+  // Active count across all statuses
+  const activeCount = Object.values(countsMap).reduce((sum, item) => sum + item.activeCount, 0);
 
-      let newThisMonth = 0;
-      if (status.employment_status === "Separated") {
-        newThisMonth = foundNewSeparated
-          ? foundNewSeparated.newSeparatedThisMonth
-          : 0;
-      } else if (status.employment_status === "Regular") {
-        newThisMonth = foundNewRegulars
-          ? foundNewRegulars.newRegularThisMonth
-          : 0;
-      } else {
-        newThisMonth = foundNewHires ? foundNewHires.newHiresThisMonth : 0;
-      }
+  // Merge counts with statuses
+  const countsByStatus = allStatuses.map((status) => {
+    const stats = countsMap[status.employment_status_id] || {};
+    let newThisMonth = 0;
 
-      return {
-        employment_status_id: status.employment_status_id,
-        employment_status: status.employment_status,
-        count: foundAllCount ? foundAllCount.count : 0,
-        newThisMonth,
-      };
-    });
-  };
+    if (status.employment_status === "Separated") {
+      newThisMonth = stats.newSeparatedThisMonth || 0;
+    } else if (status.employment_status === "Regular") {
+      newThisMonth = stats.newRegularThisMonth || 0;
+    } else {
+      newThisMonth = stats.newHiresThisMonth || 0;
+    }
+
+    return {
+      employment_status_id: status.employment_status_id,
+      employment_status: status.employment_status,
+      count: stats.count || 0,
+      newThisMonth,
+    };
+  });
 
   return {
-    countsByStatus: mergeCountsWithStatuses(
-      countsByStatusRaw,
-      newHiresByStatusRaw,
-      newSeparatedByStatusRaw,
-      newRegularsRaw,
-      allStatuses
-    ),
-    activeCount: activeCountResult,
+    countsByStatus,
+    activeCount,
   };
 };
 

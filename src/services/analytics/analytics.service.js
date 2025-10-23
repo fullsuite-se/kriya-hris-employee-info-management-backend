@@ -137,27 +137,90 @@ const formatMonthlyData = (hiringData, separationData, year) => {
 }
 
 
-
 exports.getAttritionRate = async (year = null) => {
     const targetYear = year || new Date().getFullYear();
-    const months = Array.from({ length: 12 }, (_, i) => i + 1);
 
-    const attritionRates = [];
+    // Fetch all employees that were active at any point in the year
+    const employees = await HrisUserEmploymentInfo.findAll({
+        attributes: ['date_hired', 'date_separated'],
+        where: {
+            date_hired: { [Op.lte]: new Date(targetYear, 11, 31) }, // hired before end of year
+            [Op.or]: [
+                { date_separated: null },
+                { date_separated: { [Op.gte]: new Date(targetYear, 0, 1) } } // separated after start of year
+            ]
+        },
+        raw: true
+    });
 
-    for (const month of months) {
-        const separations = await countSeparations(targetYear, month);
-        const activeEmployees = await countActiveEmployeesAtMonthStart(targetYear, month);
 
-        const rate = activeEmployees > 0
-            ? (separations / activeEmployees) * 100
-            : 0;
+    const daysInYear = 365 + (new Date(targetYear, 1, 29).getDate() === 29 ? 1 : 0); // account for leap year
+    const dailyEvents = Array.from({ length: daysInYear }, () => 0); // index 0 = Jan 1
 
-        attritionRates.push(parseFloat(rate.toFixed(2)));
+    // Map date to day-of-year index
+    const getDayIndex = (date) => {
+        const start = new Date(targetYear, 0, 1);
+        return Math.floor((date - start) / (1000 * 60 * 60 * 24));
+    };
+
+    // Populate daily events (+1 for hire, -1 for separation)
+    employees.forEach(emp => {
+        const hireDate = new Date(emp.date_hired);
+        if (hireDate.getFullYear() === targetYear) {
+            dailyEvents[getDayIndex(hireDate)] += 1;
+        } else if (hireDate < new Date(targetYear, 0, 1)) {
+            dailyEvents[0] += 1; // already employed at start of year
+        }
+
+        if (emp.date_separated) {
+            const sepDate = new Date(emp.date_separated);
+            if (sepDate.getFullYear() === targetYear) {
+                dailyEvents[getDayIndex(sepDate)] -= 1;
+            }
+        }
+    });
+
+    // Compute cumulative daily employees
+    let cumulative = 0;
+    const dailyActive = [];
+
+    for (let i = 0; i < dailyEvents.length; i++) {
+        cumulative += dailyEvents[i];
+        dailyActive.push(cumulative);
+    }
+
+    // Compute attrition per month
+    const attritionData = [];
+
+    for (let month = 0; month < 12; month++) {
+        const daysInMonth = new Date(targetYear, month + 1, 0).getDate();
+        const monthStartIndex = getDayIndex(new Date(targetYear, month, 1));
+        const monthEndIndex = monthStartIndex + daysInMonth - 1;
+
+        // Average employees in the month
+        const totalActive = dailyActive.slice(monthStartIndex, monthEndIndex + 1).reduce((a, b) => a + b, 0);
+        const avgEmployees = totalActive / daysInMonth;
+
+        // Total separations in the month
+        const separations = employees.filter(emp => {
+            if (!emp.date_separated) return false;
+            const sep = new Date(emp.date_separated);
+            return sep.getFullYear() === targetYear && sep.getMonth() === month;
+        }).length;
+
+        const attritionRate = avgEmployees > 0 ? (separations / avgEmployees) * 100 : 0;
+
+        attritionData.push({
+            month: month + 1,
+            separations,
+            avgEmployees: parseFloat(avgEmployees.toFixed(2)),
+            attritionRate: parseFloat(attritionRate.toFixed(2))
+        });
     }
 
     return {
         labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        attritionRates,
+        data: attritionData,
         year: targetYear
     };
 };

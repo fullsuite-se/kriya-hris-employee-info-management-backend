@@ -8,6 +8,7 @@ const {
   ServiceFeature
 } = require("../../models");
 
+
 exports.findAllUsersWithPermissions = async (
   serviceIds = null,
   serviceFeatureIds = null,
@@ -15,34 +16,44 @@ exports.findAllUsersWithPermissions = async (
   searchFilter = null
 ) => {
   try {
-    // STEP 1: Get all service_ids in HrisUserServicePermission 
+    // STEP 1: Get all service permissions (with service names)
     const servicePermissions = await HrisUserServicePermission.findAll({
       attributes: ["user_id", "service_id"],
-      include: [{ model: Service, attributes: ["service_name"], required: true }],
+      include: [{
+        model: Service,
+        attributes: ["service_name"],
+        required: true
+      }],
       raw: true
     });
 
+    // Extract unique user IDs and build service name map
     const userIds = [...new Set(servicePermissions.map(sp => sp.user_id))];
-
-    //  STEP 2: Prepare global counts (always computed) 
-    const allServices = await Service.findAll({ attributes: ["service_id", "service_name"], raw: true });
-    const globalCounts = { allCount: userIds.length };
-    allServices.forEach(s => { globalCounts[`${s.service_name.toLowerCase()}Count`] = 0; });
+    const serviceNameMap = {};
     servicePermissions.forEach(sp => {
-      if (userIds.includes(sp.user_id)) {
-        const key = `${sp["Service.service_name"].toLowerCase()}Count`;
-        if (globalCounts[key] !== undefined) globalCounts[key] += 1;
-      }
+      serviceNameMap[sp.service_id] = sp["Service.service_name"];
     });
 
-    // If no users at all, return early but with global counts
+    // Build global counts from existing data (no extra Service query needed)
+    const uniqueServices = [...new Set(Object.values(serviceNameMap))];
+    const globalCounts = { allCount: userIds.length };
+    uniqueServices.forEach(name => {
+      globalCounts[`${name.toLowerCase()}Count`] = 0;
+    });
+
+    servicePermissions.forEach(sp => {
+      const key = `${sp["Service.service_name"].toLowerCase()}Count`;
+      if (globalCounts[key] !== undefined) globalCounts[key] += 1;
+    }
+    );
+
     if (userIds.length === 0) {
       return { users: [], counts: { ...globalCounts, length: 0 } };
     }
 
-    //  STEP 3: Build search condition 
+    // STEP 2: Build search condition
     let searchCondition = {};
-    if (searchFilter && searchFilter.trim()) {
+    if (searchFilter?.trim()) {
       const searchTerm = searchFilter.trim();
       const searchParts = searchTerm.split(/\s+/).filter(part => part.length > 0);
 
@@ -107,22 +118,25 @@ exports.findAllUsersWithPermissions = async (
       }
     }
 
-
-    //  STEP 4: Apply search filter 
+    // STEP 3: Fetch user info ONCE with search filter and sorting
     const userInfos = await HrisUserInfo.findAll({
-      where: { user_id: { [Op.in]: userIds }, ...searchCondition },
+      where: {
+        user_id: { [Op.in]: userIds },
+        ...searchCondition
+      },
+      attributes: ["user_id", "first_name", "middle_name", "last_name", "extension_name", "user_pic"],
+      order: [["last_name", "ASC"], ["first_name", "ASC"]],
       raw: true
     });
 
-    let filteredUserIds = userInfos.map(ui => ui.user_id);
-
-    // If no filtered users, still return with global counts
-    if (filteredUserIds.length === 0) {
+    if (userInfos.length === 0) {
       return { users: [], counts: { ...globalCounts, length: 0 } };
     }
 
-    //  STEP 5: Apply service filter 
-    if (serviceIds && serviceIds.length > 0) {
+    let filteredUserIds = userInfos.map(ui => ui.user_id);
+
+    // STEP 4: Apply service filter (in-memory)
+    if (serviceIds?.length > 0) {
       filteredUserIds = [...new Set(
         servicePermissions
           .filter(sp => serviceIds.includes(sp.service_id) && filteredUserIds.includes(sp.user_id))
@@ -130,10 +144,13 @@ exports.findAllUsersWithPermissions = async (
       )];
     }
 
-    //  STEP 6: Apply feature filter 
-    if (serviceFeatureIds && serviceFeatureIds.length > 0) {
+    // STEP 5: Apply feature filter
+    if (serviceFeatureIds?.length > 0) {
       const featurePermissions = await HrisUserAccessPermission.findAll({
-        where: { user_id: { [Op.in]: filteredUserIds }, service_feature_id: { [Op.in]: serviceFeatureIds } },
+        where: {
+          user_id: { [Op.in]: filteredUserIds },
+          service_feature_id: { [Op.in]: serviceFeatureIds }
+        },
         attributes: ["user_id"],
         raw: true
       });
@@ -144,24 +161,38 @@ exports.findAllUsersWithPermissions = async (
       return { users: [], counts: { ...globalCounts, length: 0 } };
     }
 
-    //  STEP 7: Sort + paginate 
-    const sortedUsersInfo = await HrisUserInfo.findAll({
-      where: { user_id: { [Op.in]: filteredUserIds } },
-      attributes: ["user_id", "first_name", "last_name"],
-      order: [["last_name", "ASC"], ["first_name", "ASC"]],
-      raw: true
-    });
+    // STEP 6: Paginate (already sorted from userInfos)
+    const paginatedUserIds = filteredUserIds.slice(offset, offset + limit);
 
-    const sortedUserIds = sortedUsersInfo.map(u => u.user_id);
-    const paginatedUserIds = sortedUserIds.slice(offset, offset + limit);
-
-    //  STEP 8: Fetch final users 
+    // STEP 7: Fetch final users with all relations
     const users = await HrisUserAccount.findAll({
       attributes: ["user_id", "user_email"],
       include: [
-        { model: HrisUserInfo, attributes: ["first_name", "middle_name", "last_name", "extension_name", "user_pic"], required: true },
-        { model: HrisUserServicePermission, attributes: ["service_id"], include: [{ model: Service, attributes: ["service_name"], required: true }], required: true },
-        { model: HrisUserAccessPermission, attributes: ["service_feature_id"], include: [{ model: ServiceFeature, attributes: ["feature_name"], required: true }], required: false },
+        {
+          model: HrisUserInfo,
+          attributes: ["first_name", "middle_name", "last_name", "extension_name", "user_pic"],
+          required: true
+        },
+        {
+          model: HrisUserServicePermission,
+          attributes: ["service_id"],
+          include: [{
+            model: Service,
+            attributes: ["service_name"],
+            required: true
+          }],
+          required: true
+        },
+        {
+          model: HrisUserAccessPermission,
+          attributes: ["service_feature_id"],
+          include: [{
+            model: ServiceFeature,
+            attributes: ["feature_name"],
+            required: true
+          }],
+          required: false
+        },
       ],
       where: { user_id: { [Op.in]: paginatedUserIds } },
       order: [
@@ -170,7 +201,13 @@ exports.findAllUsersWithPermissions = async (
       ],
     });
 
-    return { users, counts: { ...globalCounts, length: filteredUserIds.length } };
+    return {
+      users,
+      counts: {
+        ...globalCounts,
+        length: filteredUserIds.length
+      }
+    };
   } catch (error) {
     console.error("Error in findAllUsersWithPermissions:", error);
     throw error;
