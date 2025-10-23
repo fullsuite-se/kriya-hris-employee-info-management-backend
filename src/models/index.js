@@ -67,8 +67,8 @@ HrisUserGovernmentId.belongsTo(HrisUserAccount, { foreignKey: 'user_id' });
 HrisUserGovernmentIdType.hasMany(HrisUserGovernmentId, { foreignKey: 'government_id_type_id', onDelete: 'CASCADE' });
 HrisUserGovernmentId.belongsTo(HrisUserGovernmentIdType, { foreignKey: 'government_id_type_id' });
 
-HrisUserEmploymentStatus.hasMany(HrisUserEmploymentInfo, { foreignKey: 'employment_status_id', onDelete: 'CASCADE' });
-HrisUserEmploymentInfo.belongsTo(HrisUserEmploymentStatus, { foreignKey: 'employment_status_id' });
+HrisUserEmploymentStatus.hasMany(HrisUserEmploymentInfo, { foreignKey: 'employment_status_id', onDelete: 'SET NULL' });
+HrisUserEmploymentInfo.belongsTo(HrisUserEmploymentStatus, { foreignKey: 'employment_status_id', });
 
 HrisUserSalaryAdjustmentType.hasMany(HrisUserSalary, { foreignKey: 'salary_adjustment_type_id', onDelete: 'CASCADE' });
 HrisUserSalary.belongsTo(HrisUserSalaryAdjustmentType, { foreignKey: 'salary_adjustment_type_id' });
@@ -79,10 +79,10 @@ CompanyTeam.belongsTo(Company, { foreignKey: 'company_id' });
 Company.hasMany(CompanyOffice, { foreignKey: 'company_id', onDelete: 'CASCADE' });
 CompanyOffice.belongsTo(Company, { foreignKey: 'company_id' });
 
-HrisUserJobLevel.hasMany(HrisUserEmploymentInfo, { foreignKey: 'job_level_id', onDelete: 'CASCADE' })
+HrisUserJobLevel.hasMany(HrisUserEmploymentInfo, { foreignKey: 'job_level_id', onDelete: 'SET NULL' })
 HrisUserEmploymentInfo.belongsTo(HrisUserJobLevel, { foreignKey: 'job_level_id' });
 
-HrisUserEmploymentType.hasMany(HrisUserEmploymentInfo, { foreignKey: 'employment_type_id', onDelete: 'CASCADE' });
+HrisUserEmploymentType.hasMany(HrisUserEmploymentInfo, { foreignKey: 'employment_type_id', onDelete: 'SET NULL' });
 HrisUserEmploymentInfo.belongsTo(HrisUserEmploymentType, { foreignKey: 'employment_type_id' })
 
 HrisUserAccount.hasOne(SuperAdminAccount, { foreignKey: 'user_id', as: 'super_admin' });
@@ -158,7 +158,7 @@ HrisUserInfo.belongsTo(HrisUserAccount, { foreignKey: 'user_id' });
 HrisUserAccount.hasOne(HrisUserSalary, { foreignKey: 'user_id', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 HrisUserSalary.belongsTo(HrisUserAccount, { foreignKey: 'user_id' });
 
-HrisUserShiftsTemplate.hasMany(HrisUserEmploymentInfo, { foreignKey: 'shift_template_id', onDelete: 'CASCADE' });
+HrisUserShiftsTemplate.hasMany(HrisUserEmploymentInfo, { foreignKey: 'shift_template_id', onDelete: 'SET NULL' });
 HrisUserEmploymentInfo.belongsTo(HrisUserShiftsTemplate, { foreignKey: 'shift_template_id' });
 
 Service.hasMany(LogsActivity, { foreignKey: 'service_id' });

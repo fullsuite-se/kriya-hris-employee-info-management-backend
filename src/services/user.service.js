@@ -290,7 +290,22 @@ exports.getEmployeeCounts = async () => {
     attributes: [
       "employment_status_id",
       [sequelize.fn("COUNT", sequelize.col("*")), "totalCount"],
-      [sequelize.fn("SUM", sequelize.literal(`CASE WHEN date_offboarding IS NULL AND date_separated IS NULL THEN 1 ELSE 0 END`)), "activeCount"],
+      [
+        sequelize.fn(
+          "SUM",
+          sequelize.literal(`CASE 
+      WHEN date_offboarding IS NULL 
+      AND date_separated IS NULL 
+      AND employment_status_id IN (
+        SELECT employment_status_id 
+        FROM hris_user_employment_statuses 
+        WHERE employment_status IN ('Regular', 'Probationary')
+      )
+      THEN 1 ELSE 0 END`)
+        ),
+        "activeCount"
+      ],
+
       [sequelize.fn("SUM", sequelize.literal(`CASE WHEN date_hired >= '${startOfMonth.toISOString().slice(0, 10)}' AND date_hired < '${startOfNextMonth.toISOString().slice(0, 10)}' THEN 1 ELSE 0 END`)), "newHiresThisMonth"],
       [sequelize.fn("SUM", sequelize.literal(`CASE WHEN date_separated >= '${startOfMonth.toISOString().slice(0, 10)}' AND date_separated < '${startOfNextMonth.toISOString().slice(0, 10)}' THEN 1 ELSE 0 END`)), "newSeparatedThisMonth"],
       [sequelize.fn("SUM", sequelize.literal(`CASE WHEN date_regularization >= '${startOfMonth.toISOString().slice(0, 10)}' AND date_regularization < '${startOfNextMonth.toISOString().slice(0, 10)}' THEN 1 ELSE 0 END`)), "newRegularThisMonth"]

@@ -19,7 +19,7 @@ const HrisUserEmploymentInfo = sequelize.define(
         },
         shift_template_id: {
             type: DataTypes.CHAR(36),
-            allowNull: false,
+            allowNull: true,
             references: {
                 model: 'hris_user_shifts_templates',
                 key: 'shift_template_id',
@@ -44,7 +44,7 @@ const HrisUserEmploymentInfo = sequelize.define(
         },
         employment_status_id: {
             type: DataTypes.CHAR(36),
-            allowNull: false,
+            allowNull: true,
             references: {
                 model: 'hris_user_employment_statuses',
                 key: 'employment_status_id',
@@ -52,7 +52,7 @@ const HrisUserEmploymentInfo = sequelize.define(
         },
         job_level_id: {
             type: DataTypes.CHAR(36),
-            allowNull: false,
+            allowNull: true,
             references: {
                 model: 'hris_user_job_levels',
                 key: 'job_level_id',
@@ -60,7 +60,7 @@ const HrisUserEmploymentInfo = sequelize.define(
         },
         employment_type_id: {
             type: DataTypes.CHAR(36),
-            allowNull: false,
+            allowNull: true,
             references: {
                 model: 'hris_user_employment_types',
                 key: 'employment_type_id',
