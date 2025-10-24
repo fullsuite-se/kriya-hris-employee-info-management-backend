@@ -339,11 +339,11 @@ exports.getTenureDistribution = async () => {
             [
                 literal(`
           CASE
-            WHEN (${currentYear} - YEAR(birthdate)) BETWEEN 18 AND 24 THEN '18-24'
-            WHEN (${currentYear} - YEAR(birthdate)) BETWEEN 25 AND 34 THEN '25-34'
-            WHEN (${currentYear} - YEAR(birthdate)) BETWEEN 35 AND 44 THEN '35-44'
-            WHEN (${currentYear} - YEAR(birthdate)) BETWEEN 45 AND 54 THEN '45-54'
-            WHEN (${currentYear} - YEAR(birthdate)) >= 55 THEN '55+'
+            WHEN (${currentYear} - YEAR(birthdate)) BETWEEN 18 AND 25 THEN '18-25'
+            WHEN (${currentYear} - YEAR(birthdate)) BETWEEN 26 AND 35 THEN '26-35'
+            WHEN (${currentYear} - YEAR(birthdate)) BETWEEN 36 AND 45 THEN '36-45'
+            WHEN (${currentYear} - YEAR(birthdate)) BETWEEN 46 AND 55 THEN '46-55'
+            WHEN (${currentYear} - YEAR(birthdate)) >= 56 THEN '56+'
             ELSE 'Under 18'
           END
                 `),
@@ -369,7 +369,7 @@ exports.getTenureDistribution = async () => {
     });
 
     // Define age brackets in order (starting at 18)
-    const ageBrackets = ["18-24", "25-34", "35-44", "45-54", "55+"];
+    const ageBrackets = ["18-25", "26-35", "36-45", "46-55", "56+"];
     // Define tenure groups with new ranges
     const tenureGroups = ["0-6 mos", "7mos-1yr", "2-4 yrs", "5-7 yrs", "8-10 yrs", "10+ yrs"];
 
