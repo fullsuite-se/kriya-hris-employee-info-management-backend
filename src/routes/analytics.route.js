@@ -7,5 +7,6 @@ router.get('/available-years', analyticsController.getAvailableYears);
 router.get('/attrition-rate', analyticsController.getAttritionRate);
 router.get('/sex-distribution', analyticsController.getSexDistribution);
 router.get('/age-distribution', analyticsController.getAgeDistribution);
+router.get('/tenure-distribution', analyticsController.getTenureDistribution);
 
 module.exports = router;

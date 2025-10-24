@@ -1,4 +1,4 @@
-const { Op, Sequelize, fn, col } = require('sequelize');
+const { Op, Sequelize, fn, col, literal } = require('sequelize');
 const { HrisUserEmploymentInfo, HrisUserInfo } = require('../../models');
 
 
@@ -225,33 +225,6 @@ exports.getAttritionRate = async (year = null) => {
     };
 };
 
-const countSeparations = async (year, month) => {
-    return await HrisUserEmploymentInfo.count({
-        where: {
-            date_separated: {
-                [Op.and]: [
-                    Sequelize.where(Sequelize.fn('YEAR', Sequelize.col('date_separated')), year),
-                    Sequelize.where(Sequelize.fn('MONTH', Sequelize.col('date_separated')), month)
-                ]
-            }
-        }
-    });
-};
-
-const countActiveEmployeesAtMonthStart = async (year, month) => {
-    const startOfMonth = `${year}-${String(month).padStart(2, '0')}-01`;
-
-    return await HrisUserEmploymentInfo.count({
-        where: {
-            date_hired: { [Op.lte]: startOfMonth },
-            [Op.or]: [
-                { date_separated: null },
-                { date_separated: { [Op.gt]: startOfMonth } }
-            ]
-        }
-    });
-};
-
 
 exports.getSexDistribution = async () => {
     const results = await HrisUserInfo.findAll({
@@ -339,4 +312,145 @@ exports.getAgeDistribution = async () => {
         ageGroups: ageGroupsArray,
         total: totalEmployees
     };
+};
+
+
+exports.getTenureDistribution = async () => {
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const todayStr = today.toISOString().split("T")[0];
+
+    const results = await HrisUserInfo.findAll({
+        attributes: [
+            "sex",
+            [
+                literal(`
+          CASE
+            WHEN TIMESTAMPDIFF(MONTH, employmentInfo.date_hired, '${todayStr}') <= 6 THEN '0-6 mos'
+            WHEN TIMESTAMPDIFF(MONTH, employmentInfo.date_hired, '${todayStr}') <= 12 THEN '7mos-1yr'
+            WHEN TIMESTAMPDIFF(YEAR, employmentInfo.date_hired, '${todayStr}') <= 4 THEN '2-4 yrs'
+            WHEN TIMESTAMPDIFF(YEAR, employmentInfo.date_hired, '${todayStr}') <= 7 THEN '5-7 yrs'
+            WHEN TIMESTAMPDIFF(YEAR, employmentInfo.date_hired, '${todayStr}') <= 10 THEN '8-10 yrs'
+            ELSE '10+ yrs'
+          END
+                `),
+                "tenureGroup",
+            ],
+            [
+                literal(`
+          CASE
+            WHEN (${currentYear} - YEAR(birthdate)) BETWEEN 18 AND 24 THEN '18-24'
+            WHEN (${currentYear} - YEAR(birthdate)) BETWEEN 25 AND 34 THEN '25-34'
+            WHEN (${currentYear} - YEAR(birthdate)) BETWEEN 35 AND 44 THEN '35-44'
+            WHEN (${currentYear} - YEAR(birthdate)) BETWEEN 45 AND 54 THEN '45-54'
+            WHEN (${currentYear} - YEAR(birthdate)) >= 55 THEN '55+'
+            ELSE 'Under 18'
+          END
+                `),
+                "ageGroup",
+            ],
+            [fn("COUNT", col("HrisUserInfo.user_info_id")), "count"],
+        ],
+        include: [
+            {
+                model: HrisUserEmploymentInfo,
+                as: "employmentInfo",
+                attributes: [],
+                required: true,
+            },
+        ],
+        where: {
+            sex: { [Op.in]: ["Male", "Female"] },
+            "$employmentInfo.date_hired$": { [Op.not]: null },
+            birthdate: { [Op.not]: null },
+        },
+        group: ["ageGroup", "tenureGroup", "sex"],
+        raw: true,
+    });
+
+    // Define age brackets in order (starting at 18)
+    const ageBrackets = ["18-24", "25-34", "35-44", "45-54", "55+"];
+    // Define tenure groups with new ranges
+    const tenureGroups = ["0-6 mos", "7mos-1yr", "2-4 yrs", "5-7 yrs", "8-10 yrs", "10+ yrs"];
+
+    // Initialize data structure
+    const distribution = {};
+
+    // Initialize all age brackets with empty tenure groups
+    ageBrackets.forEach(ageBracket => {
+        distribution[ageBracket] = {
+            "0-6 mos": { Male: 0, Female: 0, Total: 0 },
+            "7mos-1yr": { Male: 0, Female: 0, Total: 0 },
+            "2-4 yrs": { Male: 0, Female: 0, Total: 0 },
+            "5-7 yrs": { Male: 0, Female: 0, Total: 0 },
+            "8-10 yrs": { Male: 0, Female: 0, Total: 0 },
+            "10+ yrs": { Male: 0, Female: 0, Total: 0 },
+            total: 0
+        };
+    });
+
+    // Populate with actual counts
+    results.forEach((r) => {
+        if (distribution[r.ageGroup] && distribution[r.ageGroup][r.tenureGroup]) {
+            distribution[r.ageGroup][r.tenureGroup][r.sex] = Number(r.count);
+            distribution[r.ageGroup][r.tenureGroup].Total += Number(r.count);
+            distribution[r.ageGroup].total += Number(r.count);
+        }
+    });
+
+    // Calculate percentages for each age bracket
+    const percentageData = {};
+
+    ageBrackets.forEach(ageBracket => {
+        percentageData[ageBracket] = {
+            "0-6 mos": { Male: 0, Female: 0 },
+            "7mos-1yr": { Male: 0, Female: 0 },
+            "2-4 yrs": { Male: 0, Female: 0 },
+            "5-7 yrs": { Male: 0, Female: 0 },
+            "8-10 yrs": { Male: 0, Female: 0 },
+            "10+ yrs": { Male: 0, Female: 0 }
+        };
+
+        const ageGroupTotal = distribution[ageBracket].total;
+
+        if (ageGroupTotal > 0) {
+            tenureGroups.forEach(tenureGroup => {
+                const maleCount = distribution[ageBracket][tenureGroup].Male;
+                const femaleCount = distribution[ageBracket][tenureGroup].Female;
+
+                percentageData[ageBracket][tenureGroup].Male = Math.round((maleCount / ageGroupTotal) * 100 * 100) / 100;
+                percentageData[ageBracket][tenureGroup].Female = Math.round((femaleCount / ageGroupTotal) * 100 * 100) / 100;
+            });
+        }
+    });
+
+    // Format for chart output
+    const chartData = {
+        ageBrackets: ageBrackets,
+        tenureGroups: tenureGroups,
+        counts: distribution,
+        percentages: percentageData,
+        series: []
+    };
+
+    // Create series data for each tenure group (stacked bars)
+    tenureGroups.forEach(tenureGroup => {
+        const maleData = ageBrackets.map(ageBracket =>
+            percentageData[ageBracket][tenureGroup].Male
+        );
+        const femaleData = ageBrackets.map(ageBracket =>
+            percentageData[ageBracket][tenureGroup].Female
+        );
+
+        chartData.series.push({
+            tenureGroup: tenureGroup,
+            male: maleData,
+            female: femaleData,
+            total: ageBrackets.map(ageBracket =>
+                Math.round((percentageData[ageBracket][tenureGroup].Male + percentageData[ageBracket][tenureGroup].Female) * 100) / 100
+            )
+        });
+    });
+
+    return chartData;
 };

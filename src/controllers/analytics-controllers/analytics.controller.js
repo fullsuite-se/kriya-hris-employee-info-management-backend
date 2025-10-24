@@ -93,3 +93,24 @@ exports.getAgeDistribution = async (req, res) => {
         });
     }
 };
+
+
+
+exports.getTenureDistribution = async (req, res) => {
+    try {
+        const { year } = req.query;
+        const data = await analyticsService.getTenureDistribution( year ? parseInt(year) : null);
+
+        return res.status(200).json({
+            success: true,
+            data
+        });
+    } catch (error) {
+        console.error("Error fetching tenure distribution:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch tenure distribution"
+        });
+    }
+};
+

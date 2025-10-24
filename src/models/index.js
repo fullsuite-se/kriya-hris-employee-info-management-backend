@@ -187,6 +187,12 @@ Service.belongsToMany(HrisUserAccount, { through: HrisUserServicePermission, for
 HrisUserAccount.belongsToMany(ServiceFeature, { through: HrisUserAccessPermission, foreignKey: "user_id", otherKey: "service_feature_id" });
 ServiceFeature.belongsToMany(HrisUserAccount, { through: HrisUserAccessPermission, foreignKey: "service_feature_id", otherKey: "user_id" });
 
+
+//for tenure distribution
+HrisUserInfo.hasOne(HrisUserEmploymentInfo, { foreignKey: "user_id", sourceKey: "user_id", as: "employmentInfo" });
+HrisUserEmploymentInfo.belongsTo(HrisUserInfo, { foreignKey: "user_id", targetKey: "user_id", as: "userInfo" });
+
+
 //export
 module.exports = {
     CompanyAddress,
